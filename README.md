@@ -1,1 +1,1 @@
-# lmorales_computer_architecture_1_2023_s2
+# Computer Architecture 1 - S2 - 2023
