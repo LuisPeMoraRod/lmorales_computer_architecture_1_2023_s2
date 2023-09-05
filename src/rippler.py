@@ -3,23 +3,38 @@ import numpy as np
 import sys
 import os
 import getopt
+import subprocess
 
 CLI_ERROR_CODE = 2
+FRAMES_NUM = 4
 
+SIZE_X = 480
+SIZE_Y = 640
 
 class ImgFrameLinkedList:
     """
     Linked List class to store image frames that will make up the animation
     """
     def __init__(self, root_img_name: str, output_name: str):
-        self.root_img_data = self.parse_image(root_img_name)  # image format to list
         self.o_name = output_name
         self.head = None
         self.tail = None
         self.size = 0
+        
+        self.root_img_data = self.parse_image(root_img_name)  # image format to list
         self.create_dir()  # directory that will contain image frames
-        breakpoint()
-        self.create_bin_file(self.root_img_data)
+        self.create_bin_file(self.root_img_data)  # create first binary file for root image
+
+    def push(self, new_frame):
+        if self.size == 0:
+            self.head = new_frame
+            self.tail = new_frame
+        else:
+            aux = self.tail
+            aux.next = new_frame
+            self.tail = new_frame
+            new_frame.last = aux
+        self.size += 1
 
     def parse_image(self, name: str) -> list:
         """
@@ -38,6 +53,8 @@ class ImgFrameLinkedList:
         """
         if not os.path.isdir(self.o_name):
             os.mkdir(self.o_name)
+            os.mkdir(f'{self.o_name}/bin')
+            os.mkdir(f'{self.o_name}/images')
         else:
             raise Exception('Error: output file name already exists.')
 
@@ -58,15 +75,41 @@ class ImgFrameLinkedList:
 class ImageFrame:
     def __init__(self, id: int, base_file_name: str):
         self.id = id
+
         self.bin_file_name = self.set_bin_file_name(base_file_name, id)
+        self.img_file_name = self.set_img_file_name(base_file_name, id)
+        
+        img_data = self.decode_binary()  # retrieve and parse data from .bin file 
+        cv2.imwrite(self.img_file_name, img_data)  # create .jpg file
+        
         self.next = None
         self.last = None
 
     def set_bin_file_name(self, base_name: str, id: int) -> str:
-        return f'{base_name}_{id}.bin'
+        return f'{base_name}/bin/{base_name}_{id}.bin'
 
     def set_img_file_name(self, base_name: str, id: int) -> str:
-        return f'{base_name}_{id}.jpg'
+        return f'{base_name}/images/{base_name}_{id}.jpg'
+
+    def decode_binary(self):
+        """
+        Decode binary file data into an image usable format 
+        """
+        breakpoint()
+        try:
+            with open(self.bin_file_name, mode = "rb") as f:
+                raw_data = []
+                while (byte := f.read(1)):
+                    int_byte = int.from_bytes(byte, byteorder="big")
+                    raw_data.append(int_byte)  # read bytes from file
+
+                breakpoint()
+                raw_data = np.array(raw_data, dtype = np.uint8)  # convert to numpy array
+                img_data = raw_data.reshape(SIZE_X, SIZE_Y)
+                img_data = np.repeat(img_data[:, :, np.newaxis], 3, axis = 2)
+                return img_data
+        except Exception as e:
+            print(e)
 
 
 def get_args(argv: list) -> tuple:
@@ -94,6 +137,29 @@ def get_args(argv: list) -> tuple:
     return input_file, output_file
 
 
+def rippler(linked_list: ImgFrameLinkedList):
+    """
+    Execute arm script to process and generate 40 image frames
+    """
+    base_name = linked_list.o_name
+
+    head_frame = ImageFrame(0, base_name)  # allocate first frame
+    linked_list.push(head_frame)  # push to linked list
+
+    cont = 0
+    while (cont < FRAMES_NUM):
+
+        command = f"rv-jit rippler < {base_name}/bin/{base_name}_{cont}.bin > {base_name}/bin/{base_name}_{cont+1}.bin" 
+        result = subprocess.run(command, shell=True)
+        if result.returncode != 0:
+            raise Exception(result.stderr)
+
+        cont += 1
+
+        new_frame = ImageFrame(cont, base_name)  # allocate new frame
+        linked_list.push(new_frame)  # push to linked list
+
+
 if __name__ == "__main__":
     try:
         input_file, output_file = get_args(sys.argv[1:])
@@ -101,5 +167,6 @@ if __name__ == "__main__":
             raise Exception("Missing argument(s).\nCorrect command format is:\n\tpython rippler.py -i <inputfile> -o <outputfile>")
         else:
             linked_list = ImgFrameLinkedList(input_file, output_file)
+            rippler(linked_list)
     except Exception as e:
         print(e)
