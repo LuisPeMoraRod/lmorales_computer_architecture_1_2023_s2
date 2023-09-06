@@ -7,9 +7,10 @@ import subprocess
 
 CLI_ERROR_CODE = 2
 FRAMES_NUM = 4
+SIZE_X = 640
+SIZE_Y = 480
+FPS = 4.0  # frames per second
 
-SIZE_X = 480
-SIZE_Y = 640
 
 class ImgFrameLinkedList:
     """
@@ -79,8 +80,8 @@ class ImageFrame:
         self.bin_file_name = self.set_bin_file_name(base_file_name, id)
         self.img_file_name = self.set_img_file_name(base_file_name, id)
         
-        img_data = self.decode_binary()  # retrieve and parse data from .bin file 
-        cv2.imwrite(self.img_file_name, img_data)  # create .jpg file
+        self.img_data = self.encode_binary()  # retrieve and parse data from .bin file 
+        cv2.imwrite(self.img_file_name, self.img_data)  # create .jpg file
         
         self.next = None
         self.last = None
@@ -91,22 +92,20 @@ class ImageFrame:
     def set_img_file_name(self, base_name: str, id: int) -> str:
         return f'{base_name}/images/{base_name}_{id}.jpg'
 
-    def decode_binary(self):
+    def encode_binary(self) -> np.ndarray:
         """
-        Decode binary file data into an image usable format 
+        Encode binary file data into an image usable format
         """
-        breakpoint()
         try:
-            with open(self.bin_file_name, mode = "rb") as f:
+            with open(self.bin_file_name, mode="rb") as f:
                 raw_data = []
                 while (byte := f.read(1)):
                     int_byte = int.from_bytes(byte, byteorder="big")
                     raw_data.append(int_byte)  # read bytes from file
 
-                breakpoint()
-                raw_data = np.array(raw_data, dtype = np.uint8)  # convert to numpy array
-                img_data = raw_data.reshape(SIZE_X, SIZE_Y)
-                img_data = np.repeat(img_data[:, :, np.newaxis], 3, axis = 2)
+                raw_data = np.array(raw_data, dtype=np.uint8)  # convert to numpy array
+                img_data = raw_data.reshape(SIZE_Y, SIZE_X)
+                img_data = np.repeat(img_data[:, :, np.newaxis], 3, axis=2)
                 return img_data
         except Exception as e:
             print(e)
@@ -160,6 +159,21 @@ def rippler(linked_list: ImgFrameLinkedList):
         linked_list.push(new_frame)  # push to linked list
 
 
+def create_video(linked_list: ImgFrameLinkedList):
+    frame_size = (SIZE_X, SIZE_Y)
+    video_name = f'{linked_list.o_name}/{linked_list.o_name}.avi'
+    video = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'DIVX'), FPS, frame_size)
+
+    node_iter = linked_list.head
+    while node_iter is not None:
+        img = node_iter.img_data
+        #  img = cv2.imread(img_name)
+        video.write(img)
+        node_iter = node_iter.next
+
+    video.release()
+
+
 if __name__ == "__main__":
     try:
         input_file, output_file = get_args(sys.argv[1:])
@@ -168,5 +182,7 @@ if __name__ == "__main__":
         else:
             linked_list = ImgFrameLinkedList(input_file, output_file)
             rippler(linked_list)
+            create_video(linked_list)
+
     except Exception as e:
         print(e)
