@@ -1,3 +1,5 @@
+.equ SYS_EXIT, 93
+
 .text
 .globl _start
 
