@@ -1,34 +1,30 @@
 .data
-	buffer_orig: .space 307200
-	buffer_new: .space 307200
+	buffer_orig: .space 307201
+	buffer_new: .space 307201
 .section .rodata
 	.factor: .float 0.0837758040957  # Approximation of 2*pi/75
 	.two_pi: .float 6.2831853071796 # Approximation of 2*pi
 
-.equ IMG_SIZE, 4 #307200
+.equ IMG_SIZE, 307201
 .equ STDIN, 0
 .equ STDOUT, 1
 .equ SYS_READ, 63
 .equ SYS_WRITE, 64
 .equ SYS_EXIT, 93
 .equ TAYLOR_TERMS, 12
-.equ X_SIZE, 2 #640
-.equ Y_SIZE, 2 #480
+.equ X_SIZE, 640
+.equ Y_SIZE, 480
+.equ X_MAX, 639
+.equ Y_MAX, 479
 
 .text
 .globl _start
 
 _start:
 
-	# jal ra, _read_stdin
-	li a0, 620
-	li a1, 400
-	jal ra, _rippler_fun
-	#fcvt.s.w f2, a0 # convert to single-precision floating-point
-	#fcvt.d.s f0, f2 # convert to double-precision floating-point
-	#jal ra, _sin
-	mv a1, a0
-	j _exit
+	jal ra, _read_stdin
+	jal ra, _rippler
+	jal ra, _write_out
 
 #-----------------------------------------------------------------
 # Read input file 
@@ -39,6 +35,7 @@ _read_stdin:
 	li a2, IMG_SIZE     # Number of bytes to read
 	li a7, SYS_READ     # Syscall number for read
 	ecall
+	jalr a1, 0(ra)
 
 #-----------------------------------------------------------------
 # Rippler effect
@@ -59,7 +56,42 @@ _rippler_loop:
 	sw t0, 0(sp) # backup t0
 	addi sp, sp, -4
 	sw t1, 0(sp) # backup t1
-		
+	
+	mv a0, t0 #a0 -> x
+	mv a6, a0 #a6 -> x
+	mv a1, t1 #a1 -> y
+	mv a7, a1 #a7 -> y
+	jal ra, _rippler_fun #a0 -> x_aux
+	
+	li t0, X_MAX
+	rem a4, a0, t0 # a4 -> x_new =  x_aux % 639
+
+	bne a0, a4, _next_iter
+	
+	lw t1, 0(sp)
+	lw t0, 4(sp)
+	mv a0, t1 #a0 -> y
+	mv a1, t0 #a1 -> x
+	jal ra, _rippler_fun #a0 -> y_aux
+
+	li t0, Y_MAX
+	rem a5, a0, t0 # a5 -> y_new = y_aux % 479
+	
+	bne a0, a5, _next_iter
+
+_reassign_byte:
+	addi a4, a4, 1 #x_new + 1
+	addi a5, a5, 1 #y_new + 1
+
+	mv a0, a6
+	mv a1, a7
+	jal ra, _get_i #a0 = data_orig(x,y)
+
+	mv a2, a0
+	mv a0, a4
+	mv a1, a5
+	jal ra, _set_i # update data
+
 
 _next_iter:
 	lw t1, 0(sp) # recover t1
@@ -83,8 +115,8 @@ _return_rippler:
 #-----------------------------------------------------------------
 # Rippler function: x_new = x + A * sin(2*pi * y / L)
 # inputs:
-#	a0 -> x (double)
-#	a1 -> y (double)
+#	a0 -> x (integer)
+#	a1 -> y (integer)
 
 # output:
 # 	a0 -> x_new (integer)
@@ -106,7 +138,9 @@ _rippler_fun:
 	fmv.d f0, f2
 	jal ra, _sin 
 
-	li t0, 5 # change this for data from bin file
+	la t1, buffer_orig
+	mv t0, zero
+	lb t0, 0(t1)
 	fcvt.s.w f2, t0 # convert to single-precision floating-point
 	fcvt.d.s f1, f2 # convert to double-precision floating-point
 
@@ -124,6 +158,46 @@ _rippler_fun:
 
 	lw ra, 0(sp)
 	addi sp, sp, 4
+	jalr a1, 0(ra)
+	
+#-----------------------------------------------------------------
+# Get byte at (i,j) position
+# inputs:
+#	a0 -> x
+#	a1 -> y
+
+#output:
+#	a0 = data(x,y)
+
+_get_i:
+	li t0, X_SIZE
+	mul t1, a1, t0 
+	add t1, a0, t1 #offset
+	
+	la t0, buffer_orig
+	add t1, t0, t1 #address of position
+	addi t1, t1, 1
+	lb a0, 0(t1)
+
+	jalr a1, 0(ra)
+	
+#-----------------------------------------------------------------
+# Set byte at (i,j) position
+# inputs:
+#	a0 -> x
+#	a1 -> y
+#	a2 -> data
+
+_set_i:
+	li t0, X_SIZE
+	mul t1, a1, t0 
+	add t1, a0, t1 #offset
+	
+	la t0, buffer_new
+	add t1, t0, t1 #address of position
+	addi t1, t1, 1
+	sb a2, 0(t1)
+
 	jalr a1, 0(ra)
 #-----------------------------------------------------------------
 # sin(x) 
@@ -324,9 +398,17 @@ _return_fact:
 # Write output
 
 _write_out:  
+	#update amplitude
+	la t0, buffer_orig
+	mv t1, zero
+	lb t1, 0(t0)
+	addi t1, t1, 5
+
+	la a1, buffer_new # Buffer address
+	sb t1, 0(a1)
+	
 	# Write to console
 	li a0, STDOUT   # File descriptor (stdout)
-	la a1, buffer_new # Buffer address
 	li a2, IMG_SIZE   # Number of bytes to write
 	li a7, SYS_WRITE    # Syscall number for write
 	ecall
