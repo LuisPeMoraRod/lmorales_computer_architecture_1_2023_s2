@@ -6,10 +6,11 @@ import getopt
 import subprocess
 
 CLI_ERROR_CODE = 2
-FRAMES_NUM = 4
+FRAMES_NUM = 40
 SIZE_X = 640
 SIZE_Y = 480
 FPS = 4.0  # frames per second
+AMPLITUDE = 5 # first value of signal amplitude
 
 
 class ImgFrameLinkedList:
@@ -64,6 +65,7 @@ class ImgFrameLinkedList:
         Create first binary file for root image
         """
         try:
+            data = np.insert(data, 0, AMPLITUDE)
             data = bytearray(data)
             name = f'{self.o_name}/bin/{self.o_name}_0.bin'
             with open(name, 'wb') as f:
@@ -104,6 +106,7 @@ class ImageFrame:
                     raw_data.append(int_byte)  # read bytes from file
 
                 raw_data = np.array(raw_data, dtype=np.uint8)  # convert to numpy array
+                raw_data = raw_data[1:]
                 img_data = raw_data.reshape(SIZE_Y, SIZE_X)
                 img_data = np.repeat(img_data[:, :, np.newaxis], 3, axis=2)
                 return img_data
