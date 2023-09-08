@@ -3,6 +3,7 @@
 	buffer_new: .space 307200
 .section .rodata
 	.factor: .float 0.0837758040957  # Approximation of 2*pi/75
+	.two_pi: .float 6.2831853071796 # Approximation of 2*pi
 
 .equ IMG_SIZE, 4 #307200
 .equ STDIN, 0
@@ -18,12 +19,15 @@
 .globl _start
 
 _start:
-	#li a1, 2
-	#fcvt.s.w f1, a1
-	#fcvt.d.s f0, f1 
 
-	jal ra, _read_stdin
-
+	# jal ra, _read_stdin
+	li a0, 620
+	li a1, 400
+	jal ra, _rippler_fun
+	#fcvt.s.w f2, a0 # convert to single-precision floating-point
+	#fcvt.d.s f0, f2 # convert to double-precision floating-point
+	#jal ra, _sin
+	mv a1, a0
 	j _exit
 
 #-----------------------------------------------------------------
@@ -56,15 +60,6 @@ _rippler_loop:
 	addi sp, sp, -4
 	sw t1, 0(sp) # backup t1
 		
-	la t3, .factor
-	flw f0, 0(t3) # 2*pi/75
-	fcvt.d.s f1, f0 # convert to double-precision floating-point
-
-	fcvt.s.w f2, t0 # convert to single-precision floating-point
-	fcvt.d.s f0, f2 # convert to double-precision floating-point
-		
-	fmul.d f0, f1, f0
-	#jal ra, _sin 
 
 _next_iter:
 	lw t1, 0(sp) # recover t1
@@ -86,6 +81,51 @@ _return_rippler:
 	jalr a1, 0(ra)
 
 #-----------------------------------------------------------------
+# Rippler function: x_new = x + A * sin(2*pi * y / L)
+# inputs:
+#	a0 -> x (double)
+#	a1 -> y (double)
+
+# output:
+# 	a0 -> x_new (integer)
+
+_rippler_fun:
+	addi sp, sp, -4
+	sw ra, 0(sp) # backup ra
+	addi sp, sp, -4
+	sw a0, 0(sp) # backup x
+
+	la t3, .factor
+	flw f0, 0(t3) # 2*pi/75
+	fcvt.d.s f1, f0 # convert to double-precision floating-point
+
+	fcvt.s.w f2, a1 # convert to single-precision floating-point
+	fcvt.d.s f0, f2 # convert to double-precision floating-point
+		
+	fmul.d f2, f1, f0 #f0 = 2*pi/L * y
+	fmv.d f0, f2
+	jal ra, _sin 
+
+	li t0, 5 # change this for data from bin file
+	fcvt.s.w f2, t0 # convert to single-precision floating-point
+	fcvt.d.s f1, f2 # convert to double-precision floating-point
+
+	fmul.d f2, f1, f0 #f0 = A * sin(2*pi/L * y)
+	fmv.d f0, f2
+
+	lw a0, 0(sp) # recover x
+	addi sp, sp, 4
+	fcvt.s.w f2, a0 # convert to single-precision floating-point
+	fcvt.d.s f1, f2 # convert to double-precision floating-point
+
+	fadd.d f0, f1, f0 # f = x + A * sin(2*pi * y / L)
+
+	fcvt.w.d a0, f0 # convert double to integer
+
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	jalr a1, 0(ra)
+#-----------------------------------------------------------------
 # sin(x) 
 # inputs:
 #	f0 -> x (doble-precision floating-point)
@@ -102,6 +142,20 @@ _sin:
 	fcvt.d.s f1, f2  # single-precision float to double-precision float
 
 	fmv.d f6, f0 #store x in f2
+
+_polar_redundance:
+	la t4, .two_pi
+	flw f2, 0(t4) # 2*pi
+	fcvt.d.s f3, f2 # convert to double-precision floating-point
+
+_p_red_loop:
+	fle.d t4, f0, f3
+	bnez t4, _compute_sin
+	fsub.d f0, f0, f3
+
+	j _p_red_loop
+
+_compute_sin:
 
 	addi sp, sp, -4
 	sw ra, 0(sp) # backup ra
@@ -230,7 +284,8 @@ _pow:
 _pow_loop:
 	beq a0, a1, _return_pow  # stop condition: a0 == 0
 	
-	fmul.d f0, f0, f1  # save power result in f0
+	fmul.d f2, f0, f1  # save power result in f0
+	fmv.d f0, f2
 	
 	addi a0, a0, -1
 	j _pow_loop
