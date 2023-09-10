@@ -128,33 +128,41 @@ _rippler_fun:
 	sw a0, 0(sp) # backup x
 
 	la t3, .factor
-	flw f0, 0(t3) # 2*pi/75
-	fcvt.d.s f1, f0 # convert to double-precision floating-point
+	flw f1, 0(t3) # 2*pi/75
+	#flw f0, 0(t3) # 2*pi/75
+	#fcvt.d.s f1, f0 # convert to double-precision floating-point
 
-	fcvt.s.w f2, a1 # convert to single-precision floating-point
-	fcvt.d.s f0, f2 # convert to double-precision floating-point
+	fcvt.s.w f0, a1 # convert to single-precision floating-point
+	#fcvt.s.w f2, a1 # convert to single-precision floating-point
+	#fcvt.d.s f0, f2 # convert to double-precision floating-point
 		
-	fmul.d f2, f1, f0 #f0 = 2*pi/L * y
-	fmv.d f0, f2
+	fmul.s f0, f1, f0 #f0 = 2*pi/L * y
+	#fmul.d f2, f1, f0 #f0 = 2*pi/L * y
+	#fmv.d f0, f2
 	jal ra, _sin 
 
-	la t1, buffer_orig
+	la t1, buffer_orig # get signal amplitude
 	mv t0, zero
 	lb t0, 0(t1)
-	fcvt.s.w f2, t0 # convert to single-precision floating-point
-	fcvt.d.s f1, f2 # convert to double-precision floating-point
+	fcvt.s.w f1, t0 # convert to single-precision floating-point
+	#fcvt.s.w f2, t0 # convert to single-precision floating-point
+	#fcvt.d.s f1, f2 # convert to double-precision floating-point
 
-	fmul.d f2, f1, f0 #f0 = A * sin(2*pi/L * y)
-	fmv.d f0, f2
+	fmul.s f0, f1, f0 #f0 = A * sin(2*pi/L * y)
+	#fmul.d f2, f1, f0 #f0 = A * sin(2*pi/L * y)
+	#fmv.d f0, f2
 
 	lw a0, 0(sp) # recover x
 	addi sp, sp, 4
-	fcvt.s.w f2, a0 # convert to single-precision floating-point
-	fcvt.d.s f1, f2 # convert to double-precision floating-point
+	fcvt.s.w f1, a0 # convert to single-precision floating-point
+	#fcvt.s.w f2, a0 # convert to single-precision floating-point
+	#fcvt.d.s f1, f2 # convert to double-precision floating-point
 
-	fadd.d f0, f1, f0 # f = x + A * sin(2*pi * y / L)
+	#fadd.d f0, f1, f0 # f = x + A * sin(2*pi * y / L)
+	fadd.s f0, f1, f0 # f = x + A * sin(2*pi * y / L)
 
-	fcvt.w.d a0, f0 # convert double to integer
+	#fcvt.w.d a0, f0 # convert double to integer
+	fcvt.w.s a0, f0 # convert double to integer
 
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -212,25 +220,27 @@ _sin:
 	li t2, TAYLOR_TERMS
 	li t3, 2
 	
-	fcvt.s.w f2, t0  # integer to single-precision float
-	fcvt.d.s f1, f2  # single-precision float to double-precision float
-
-	fmv.d f6, f0 #store x in f2
+	fcvt.s.w f1, t0  # integer to single-precision float
+	#fcvt.s.w f2, t0  # integer to single-precision float
+	#fcvt.d.s f1, f2  # single-precision float to double-precision float
 
 _polar_redundance:
 	la t4, .two_pi
-	flw f2, 0(t4) # 2*pi
-	fcvt.d.s f3, f2 # convert to double-precision floating-point
+	flw f3, 0(t4) # 2*pi
+	#flw f2, 0(t4) # 2*pi
+	#fcvt.d.s f3, f2 # convert to double-precision floating-point
 
 _p_red_loop:
-	fle.d t4, f0, f3
+	fle.s t4, f0, f3
+	#fle.d t4, f0, f3
 	bnez t4, _compute_sin
-	fsub.d f0, f0, f3
+	fsub.s f0, f0, f3
+	#fsub.d f0, f0, f3
 
 	j _p_red_loop
 
 _compute_sin:
-
+	fmv.s f6, f0 #store x in f6
 	addi sp, sp, -4
 	sw ra, 0(sp) # backup ra
 _sin_loop:
@@ -240,7 +250,8 @@ _sin_loop:
 	rem t4, t0, t3
 	beq t4, zero, _sin_loop # if t0 is even
 
-	fmv.d f0, f6 # recover f0
+	fmv.s f0, f6 # recover f0
+	#fmv.d f0, f6 # recover f0
 	mv a0, t0
 	jal ra, _taylor_term # save term to f0
 
@@ -250,19 +261,23 @@ _sin_loop:
 	bne t4, zero, _sum_term # if t1 is even: sum term, if not subtract term
 
 _sub_term:
-	fsub.d f1, f1, f0
+	fsub.s f1, f1, f0
+	#fsub.d f1, f1, f0
 	j _next_iter_sin
 
 _sum_term:		
-	fadd.d f1, f0, f1 # sum accumulate
+	fadd.s f1, f0, f1 # sum accumulate
+	#fadd.d f1, f0, f1 # sum accumulate
 
 _next_iter_sin:	
-	fmv.d f0, f2 # recover x to f0
+	fmv.s f0, f2 # recover x to f0
+	#fmv.d f0, f2 # recover x to f0
 	j _sin_loop
 
 	
 _return_sin:
-	fmv.d f0, f1
+	fmv.s f0, f1
+	#fmv.d f0, f1
 	lw ra, 0(sp)
 	addi sp, sp, 4 # recover ra
 	jalr a1, 0(ra)
@@ -279,7 +294,8 @@ _taylor_term:
 	addi sp, sp, -4
 	sw ra, 0(sp)  # backup ra
 
-	fmv.d f5, f1  # backup f1
+	fmv.s f5, f1  # backup f1
+	#fmv.d f5, f1  # backup f1
 
 	# arguments for pow(a0, a0) = a0^a1
 	jal ra, _pow  # f0 = x^n
@@ -289,7 +305,8 @@ _taylor_term:
 	jal ra, _div_d_i  #f0 = (x^n)/(n!)
 
 _return_taylor_term:
-	fmv.d f1, f5 #recover f1
+	fmv.s f1, f5 #recover f1
+	#fmv.d f1, f5 #recover f1
 
 	lw ra, 0(sp)  #recover ra
 	addi sp, sp, 4
@@ -308,10 +325,11 @@ _div_i_i:
 	fcvt.s.w f0, a0  # integer to single-precision float
 	fcvt.s.w f1, a1  # integer to single-precision float
 	
-	fcvt.d.s f2, f0  # single-precision float to double-precision float
-	fcvt.d.s f3, f1  # single-precision float to double-precision float
+	#fcvt.d.s f2, f0  # single-precision float to double-precision float
+	#fcvt.d.s f3, f1  # single-precision float to double-precision float
 
-	fdiv.d f0, f2, f3  # store result of division in f0: f2/f3 = f0
+	fdiv.s f0, f0, f1  # store result of division in f0: f2/f3 = f0
+	#fdiv.d f0, f2, f3  # store result of division in f0: f2/f3 = f0
 
 _return_div_i_i:
 	jalr a1, 0(ra)
@@ -326,11 +344,13 @@ _return_div_i_i:
 #	f0 -> double-precision floating-point
 
 _div_d_i:
-	fcvt.s.w f2, a0  # integer to single-precision float
-	fcvt.d.s f1, f2  # single-precision float to double-precision float
+	fcvt.s.w f1, a0  # integer to single-precision float
+	#fcvt.s.w f2, a0  # integer to single-precision float
+	#fcvt.d.s f1, f2  # single-precision float to double-precision float
 
-	fdiv.d f2, f0, f1  # store result of division in f2: f0/f1 = f1
-	fmv.d f0, f2  # return result in f0
+	fdiv.s f0, f0, f1  # store result of division in f2: f0/f1 = f1
+	#fdiv.d f2, f0, f1  # store result of division in f2: f0/f1 = f1
+	#fmv.d f0, f2  # return result in f0
 
 _return_div_d_i:
 	jalr a1, 0(ra)
@@ -348,18 +368,21 @@ _pow:
 	addi sp, sp, -4
 	sw a0, 0(sp) # backup a0
 
-	fmv.d f1, f0
+	fmv.s f1, f0
+	#fmv.d f1, f0
 
 	li a1, 1
-	fcvt.s.w f1, a1
-	fcvt.d.s f0, f1 # initial value: f0 = 1 
+	fcvt.s.w f0, a1
+	#fcvt.s.w f2, a1
+	#fcvt.d.s f0, f2 # initial value: f0 = 1 
 
 	li a1, 0  # stop condition
 _pow_loop:
 	beq a0, a1, _return_pow  # stop condition: a0 == 0
 	
-	fmul.d f2, f0, f1  # save power result in f0
-	fmv.d f0, f2
+	fmul.s f0, f0, f1  # save power result in f0
+	#fmul.d f2, f0, f1  # save power result in f0
+	#fmv.d f0, f2
 	
 	addi a0, a0, -1
 	j _pow_loop
