@@ -74,6 +74,24 @@ class ImgFrameLinkedList:
         except Exception as e:
             print(e)
 
+    def update_amplitude(self, inc):
+        file_name = self.head.bin_file_name
+        try:
+            with open(file_name, mode="rb") as f:
+                raw_data = []
+                while (byte := f.read(1)):
+                    int_byte = int.from_bytes(byte, byteorder="big")
+                    raw_data.append(int_byte)  # read bytes from file
+                first_byte = raw_data[0]
+                raw_data[0] = first_byte + inc
+                f.close()
+            with open(file_name, "wb") as f: 
+                data = bytearray(raw_data)
+                f.write(data)
+                f.close()
+        except Exception as e:
+            print(e)
+
 
 class ImageFrame:
     def __init__(self, id: int, base_file_name: str):
@@ -129,7 +147,7 @@ def get_args(argv: list) -> tuple:
         sys.exit(CLI_ERROR_CODE)
     for opt, arg in opts:
         if opt == '-h':
-            print('sm_codes_parser.py -i <inputfile> -o <outputfile>')
+            print('python rippler.py -i <inputfile> -o <outputfile>')
             sys.exit()
         elif opt in ("-i", "--ifile"):
             input_file = arg
@@ -151,7 +169,7 @@ def rippler(linked_list: ImgFrameLinkedList):
     cont = 0
     while (cont < FRAMES_NUM):
 
-        command = f"rv-jit rippler < {base_name}/bin/{base_name}_{cont}.bin > {base_name}/bin/{base_name}_{cont+1}.bin" 
+        command = f"rv-jit rippler < {base_name}/bin/{base_name}_0.bin > {base_name}/bin/{base_name}_{cont+1}.bin" 
         result = subprocess.run(command, shell=True)
         if result.returncode != 0:
             raise Exception(result.stderr)
@@ -160,6 +178,7 @@ def rippler(linked_list: ImgFrameLinkedList):
 
         new_frame = ImageFrame(cont, base_name)  # allocate new frame
         linked_list.push(new_frame)  # push to linked list
+        linked_list.update_amplitude(AMPLITUDE)  # increment amplitude by 5
 
 
 def create_video(linked_list: ImgFrameLinkedList):
