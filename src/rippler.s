@@ -4,6 +4,7 @@
 .section .rodata
 	.factor: .float 0.0837758040957  # Approximation of 2*pi/75
 	.two_pi: .float 6.2831853071796 # Approximation of 2*pi
+	.pi: .float 3.1415926535898
 
 .equ IMG_SIZE, 307201
 .equ STDIN, 0
@@ -61,10 +62,10 @@ _rippler_loop:
 	mv a6, a0 #a6 -> x
 	mv a1, t1 #a1 -> y
 	mv a7, a1 #a7 -> y
-	jal ra, _rippler_fun #a0 -> x_aux
+	jal ra, _rippler_fun #a0 -> y_aux
 	
-	li t0, X_MAX
-	rem a4, a0, t0 # a4 -> x_new =  x_aux % 639
+	li t0, 640
+	rem a4, a0, t0 # a4 -> y_new =  y_aux % 640
 
 	bne a0, a4, _next_iter
 	
@@ -72,16 +73,16 @@ _rippler_loop:
 	lw t0, 4(sp)
 	mv a0, t1 #a0 -> y
 	mv a1, t0 #a1 -> x
-	jal ra, _rippler_fun #a0 -> y_aux
+	jal ra, _rippler_fun #a0 -> x_aux
 
-	li t0, Y_MAX
-	rem a5, a0, t0 # a5 -> y_new = y_aux % 479
+	li t0, 480
+	rem a5, a0, t0 # a5 -> x_new = x_aux % 480
 	
 	bne a0, a5, _next_iter
 
 _reassign_byte:
-	addi a4, a4, 1 #x_new + 1
-	addi a5, a5, 1 #y_new + 1
+	addi a5, a5, 1 #x_new + 1
+	addi a4, a4, 1 #y_new + 1
 
 	mv a0, a6
 	mv a1, a7
@@ -221,23 +222,36 @@ _sin:
 	li t3, 2
 	
 	fcvt.s.w f1, t0  # integer to single-precision float
-	#fcvt.s.w f2, t0  # integer to single-precision float
-	#fcvt.d.s f1, f2  # single-precision float to double-precision float
 
 _polar_redundance:
 	la t4, .two_pi
 	flw f3, 0(t4) # 2*pi
-	#flw f2, 0(t4) # 2*pi
-	#fcvt.d.s f3, f2 # convert to double-precision floating-point
 
-_p_red_loop:
+	la t4, .pi
+	flw f4, 0(t4) #pi
+
+
+_p_red_loop_2pi:
 	fle.s t4, f0, f3
-	#fle.d t4, f0, f3
-	bnez t4, _compute_sin
+	bnez t4, _set_sign
 	fsub.s f0, f0, f3
-	#fsub.d f0, f0, f3
 
-	j _p_red_loop
+	j _p_red_loop_2pi
+
+_set_sign:
+	addi sp, sp, -4
+	li t5, 1
+	sw t5, 0(sp)
+
+_p_red_loop_pi:
+	fle.s t4, f0, f4
+	bnez t4, _compute_sin
+	fsub.s f0, f0, f4
+	
+	li t5, -1
+	sw t5, 0(sp)
+
+	j _p_red_loop_pi
 
 _compute_sin:
 	fmv.s f6, f0 #store x in f6
@@ -277,9 +291,14 @@ _next_iter_sin:
 	
 _return_sin:
 	fmv.s f0, f1
-	#fmv.d f0, f1
+
 	lw ra, 0(sp)
 	addi sp, sp, 4 # recover ra
+	lw t0, 0(sp)
+	addi sp, sp, 4 # recover sign
+	fcvt.s.w f2, t0  # integer to single-precision float
+	fmul.s f0, f0, f2 # set sign
+
 	jalr a1, 0(ra)
 	
 #-----------------------------------------------------------------
