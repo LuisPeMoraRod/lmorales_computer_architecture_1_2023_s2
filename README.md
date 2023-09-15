@@ -24,4 +24,4 @@ python rippler.py -i assets/barbara_640x480.jpg -o barbara
 deactivate
 ```
 
-## Project 1 - ASIP for audio reverberation
+## Project 2 - ASIP for audio reverberation
