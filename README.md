@@ -3,9 +3,9 @@
 
 To execute the script:
 
-1. Create a Python virtual environment inside `src` directory:
+1. Create a Python virtual environment inside `project1/src` directory:
 ```
-cd src/ && python3 -m venv venv
+cd project1/src/ && python3 -m venv venv
 ```
 2. Activate virtual environment:
 ```
@@ -23,3 +23,5 @@ python rippler.py -i assets/barbara_640x480.jpg -o barbara
 ```
 deactivate
 ```
+
+## Project 1 - ASIP for audio reverberation
