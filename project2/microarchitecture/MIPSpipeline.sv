@@ -6,7 +6,7 @@ module MIPSpipeline(clk, reset);
 		wire [31:0] PC4,ID_PC4,EX_PC4;
 		wire [31:0] PCbne,PC4bne,PCj,PC4bnej,PCjr; // PC signals in MUX
 		wire [31:0] Instruction,ID_Instruction,EX_Instruction; // Output of Instruction Memory
-		wire [5:0] Opcode,Function; // Opcode, Function
+		wire [5:0] Opcode,Funct; // Opcode, Funct
 
 		// Extend
 		wire [15:0] imm16; // immediate in I type instruction
@@ -56,7 +56,7 @@ module MIPSpipeline(clk, reset);
 
 		//========= ID STAGE===========
 		assign Opcode = ID_Instruction[31:26];
-		assign Function = ID_Instruction[5:0];
+		assign Funct = ID_Instruction[5:0];
 		assign rs = ID_Instruction[25:21];
 		assign rt = ID_Instruction[20:16];
 		assign rd = ID_Instruction[15:11];
@@ -98,7 +98,7 @@ module MIPSpipeline(clk, reset);
 		 // immediate extend: sign or zero
 		mux2x32to32 muxSignZero( Im16_Ext,sign_ext_out,zero_ext_out, SignZero);
 
-		JRControl_Block JRControl_Block1( JRControl, ALUOp, Function);
+		JRControl_Block JRControl_Block1( JRControl, ALUOp, Funct);
 
 		Discard_Instr Discard_Instr_Block(ID_flush,IF_flush,JumpControl,bneControl,EX_JRControl);
 
@@ -139,7 +139,7 @@ module MIPSpipeline(clk, reset);
 		mux2x32to32 muxALUSrc( Bus_B_ALU,Bus_B_forwarded,EX_Im16_Ext, EX_ALUSrc);
 		// ALU Control
 		ALUControl_Block ALUControl_Block1( ALUControl, EX_ALUOp, EX_Im16_Ext[5:0]);
-		// EX_Im16_Ext[5:0] is function
+		// EX_Im16_Ext[5:0] is funct
 
 		// ALU
 		alu alu_block(EX_ALUResult, CarryFlag, ZeroFlag, OverflowFlag, NegativeFlag, Bus_A_ALU, Bus_B_ALU, ALUControl);

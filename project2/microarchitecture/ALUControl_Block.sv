@@ -1,12 +1,12 @@
 `timescale 1 ps / 100 fs
 // ALU Control unit
-module ALUControl_Block( ALUControl, ALUOp, Function);
+module ALUControl_Block( ALUControl, ALUOp, funct);
 	output [1:0] ALUControl;
 	reg [1:0] ALUControl;
 	input [1:0] ALUOp;
-	input [5:0] Function;
+	input [5:0] funct;
 	wire [7:0] ALUControlIn;
-	assign ALUControlIn = {ALUOp,Function};
+	assign ALUControlIn = {ALUOp,funct};
 	always @(ALUControlIn)
 	casex (ALUControlIn)
 		8'b11xxxxxx: ALUControl=2'b01;
