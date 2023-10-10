@@ -1,7 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset);
+module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister);
 		input clk, reset;
+
+		//output for testbenches
+		output [31:0] outPC, outInstruction, outWriteData;
+		output [5:0] outWriteRegister;
+
 		wire [31:0] PC, PCin;
 		wire [31:0] PC4,ID_PC4,EX_PC4;
 		wire [31:0] PCbne,PC4bne,PCj,PC4bnej,PCjr; // PC signals in MUX
@@ -207,5 +212,11 @@ module MIPSpipeline(clk, reset);
 		 // JR: Jump Register
 		assign PCjr = Bus_A_ALU;
 		mux2x32to32  muxJR( PCin,PC4bnej, PCjr, EX_JRControl);
+
+		// Testbench signals
+		assign outPC = PC;
+		assign outInstruction = Instruction;
+		assign outWriteRegister = WB_WriteRegister;
+		assign outWriteData = WB_WriteData;
  
 endmodule
