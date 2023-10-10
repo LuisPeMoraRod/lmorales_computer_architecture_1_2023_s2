@@ -14,7 +14,7 @@ begin
    reset = 1;
   #20000;
   reset = 0;
-  #200000;
+  #400000;
   $finish;
 end
 endmodule

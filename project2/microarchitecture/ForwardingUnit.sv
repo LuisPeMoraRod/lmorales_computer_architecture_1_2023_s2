@@ -18,10 +18,13 @@ module ForwardingUnit(ForwardA,ForwardB,MEM_RegWrite,WB_RegWrite,MEM_WriteRegist
 	and #(50) andy(y,WB_RegWrite,c,d);
 	// y=1 if ((WB_RegWrite==1)&&(WB_WriteRegister != 0)&&(WB_WriteRegister==EX_rs))
 
-	// ForwardA[1] = x; va ForwardA[0] = (NOT x). y ;
-	assign ForwardA[1] = x;
-	not #(50) notxgate(notx,x);
-	and #(50) NOTxANDy(ForwardA[0],notx,y);
+	// ForwardA[1] = x; ForwardA[0] = ~x && y ;
+	// assign ForwardA[1] = x;
+	// not #(50) notxgate(notx,x);
+	// and #(50) NOTxANDy(ForwardA[0],notx,y);
+	assign ForwardA[1] = y;
+	not #(50) notygate(noty,y);
+	and #(50) NOTyANDx(ForwardA[0],noty,x);
 
 	// ForwardB 
 	CompareAddress CompMEM_WriteReg_EXrt(b1,MEM_WriteRegister,EX_rt);
@@ -29,7 +32,10 @@ module ForwardingUnit(ForwardA,ForwardB,MEM_RegWrite,WB_RegWrite,MEM_WriteRegist
 	and #(50) andx1(x1,MEM_RegWrite,a,b1);
 	and #(50) andy1(y1,WB_RegWrite,c,d1);
 
-	assign ForwardB[1] = x1;
-	not #(50) notx1gate(notx1,x1);
-	and #(50) NOTx1ANDy1(ForwardB[0],notx1,y1);
+	// assign ForwardB[1] = x1;
+	// not #(50) notx1gate(notx1,x1);
+	// and #(50) NOTx1ANDy1(ForwardB[0],notx1,y1);
+	assign ForwardB[1] = y1;
+	not #(50) noty1gate(noty1,y1);
+	and #(50) NOTy1ANDx1(ForwardB[0],noty1,x1);
 endmodule
