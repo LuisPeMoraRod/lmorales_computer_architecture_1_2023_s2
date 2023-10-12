@@ -47,7 +47,8 @@ end
 initial
 begin
    // $readmemb("../../instr.txt", instrmem); //path for simulation
-   $readmemb("../../testbenches/slt_test_instructions.txt", instrmem); //path for simulation
+   // $readmemb("../../testbenches/slt_test_instructions.txt", instrmem); //path for simulation
+   $readmemb("../../testbenches/beq_test_instructions.txt", instrmem); //path for simulation
    // $readmemb("instr.txt", instrmem);
 end
 

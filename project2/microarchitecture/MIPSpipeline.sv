@@ -1,11 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister);
+module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
 		input clk, reset;
 
 		//output for testbenches
 		output [31:0] outPC, outInstruction, outWriteData;
 		output [5:0] outWriteRegister;
+		output outBneControl;
 
 		wire [31:0] PC, PCin;
 		wire [31:0] PC4,ID_PC4,EX_PC4;
@@ -197,7 +198,8 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		shift_left_2 shiftleft2_bne(shiftleft2_bne_out, EX_Im16_Ext);
 		Add Add_bne(PCbne,EX_PC4,shiftleft2_bne_out);
 		not #(50) notZero(notZeroFlag,ZeroFlag);
-		and #(50) andbneControl(bneControl,EX_Branch,notZeroFlag);
+		// and #(50) andbneControl(bneControl,EX_Branch,notZeroFlag);
+		and #(50) andbneControl(bneControl,EX_Branch,ZeroFlag); //testing without inverted flag for beq instead of bne
 		mux2x32to32  muxbneControl( PC4bne,PC4, PCbne, bneControl);
 		  // jump
 		shift_left_2 shiftleft2_jump(shiftleft2_jump_out, {6'b0,ID_Instruction[25:0]});
@@ -218,5 +220,6 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		assign outInstruction = Instruction;
 		assign outWriteRegister = WB_WriteRegister;
 		assign outWriteData = WB_WriteData;
+		assign outBneControl = bneControl;
  
 endmodule

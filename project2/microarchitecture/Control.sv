@@ -57,7 +57,7 @@ casex (Opcode)
      Jump = 1'b0;
      SignZero= 1'b0;
     end
- 6'b000101 : begin // bne - branch if not equal
+ 6'b000100 : begin // beq - branch on equal
      RegDst = 1'b0;
      ALUSrc = 1'b0;
      MemtoReg= 1'b0;

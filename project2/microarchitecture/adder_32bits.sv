@@ -23,7 +23,7 @@ module adder_32bits
 	
 	assign C = cins[32];
 	assign N = R[31];
-	assign Z = ~(R || '0) && ~C;
+	assign Z = (R == 32'h00000000) ? 1 : 0;
 	assign V = (~Cin && (A[31] == B[31]) && (R[31] != A[31])) || (Cin && (A[31] != B[31]) && (R[31] != A[31])); 
 
 endmodule
