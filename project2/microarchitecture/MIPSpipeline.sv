@@ -9,8 +9,8 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		output outBneControl;
 
 		wire [31:0] PC, PCin;
-		wire [31:0] PC4,ID_PC4,EX_PC4;
-		wire [31:0] PCbne,PC4bne,PCj,PC4bnej,PCjr; // PC signals in MUX
+		wire [31:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
+		wire [31:0] PCbne,PCp1bne,PCj,PCp1bnej,PCjr; // PC signals in MUX
 		wire [31:0] Instruction,ID_Instruction,EX_Instruction; // Output of Instruction Memory
 		wire [5:0] Opcode,Funct; // Opcode, Funct
 
@@ -50,13 +50,13 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 
 		//====== PC register======
 		register PC_Reg(PC,PCin,PC_WriteEn,reset,clk);
-		Add Add1(PC4,PC,{29'b0,3'b100}); // PC4 = PC + 4
+		Add Add1(PCp1,PC,{29'b0,3'b001}); // PCp1 = PC + 1
 
 		InstructionMem InstructionMem1(Instruction, PC);
 
 		// register IF/ID
 
-		register IFID_PC4(ID_PC4,PC4,IFID_WriteEn,reset,clk);
+		register IFID_PCp1(ID_PCp1,PCp1,IFID_WriteEn,reset,clk);
 		register IFID_Instruction(ID_Instruction,Instruction,IFID_WriteEn,reset,clk);
 		RegBit IF_flush_bit(IFID_flush,IF_flush, IFID_WriteEn,reset, clk);
 
@@ -114,7 +114,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 
 		//==========EX STAGE=========================
 		// thanh ghi ID/EX
-		register IDEX_PC4(EX_PC4,ID_PC4,1'b1,reset,clk);
+		register IDEX_PCp1(EX_PCp1,ID_PCp1,1'b1,reset,clk);
 
 		register IDEX_ReadData1(EX_ReadData1,ReadData1Out,1'b1,reset,clk);
 		register IDEX_ReadData2(EX_ReadData2,ReadData2Out,1'b1,reset,clk);
@@ -196,24 +196,24 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		//Jump,bne, JRs
 		 // bne: Branch if not equal
 		shift_left_2 shiftleft2_bne(shiftleft2_bne_out, EX_Im16_Ext);
-		Add Add_bne(PCbne,EX_PC4,shiftleft2_bne_out);
+		Add Add_bne(PCbne,EX_PCp1,shiftleft2_bne_out);
 		not #(50) notZero(notZeroFlag,ZeroFlag);
 		// and #(50) andbneControl(bneControl,EX_Branch,notZeroFlag);
 		and #(50) andbneControl(bneControl,EX_Branch,ZeroFlag); //testing without inverted flag for beq instead of bne
-		mux2x32to32  muxbneControl( PC4bne,PC4, PCbne, bneControl);
+		mux2x32to32  muxbneControl( PCp1bne,PCp1, PCbne, bneControl);
 		  // jump
 		shift_left_2 shiftleft2_jump(shiftleft2_jump_out, {6'b0,ID_Instruction[25:0]});
-		assign PCj = {ID_PC4[31:28],shiftleft2_jump_out[27:0]};
+		assign PCj = {ID_PCp1[31:28],shiftleft2_jump_out[27:0]};
 
 		not #(50) notIFIDFlush(notIFID_flush,IFID_flush);
 		and #(50) andJumpFlush(JumpFlush,Jump,notIFID_flush);
 		not #(50) notbne(notbneControl,bneControl);
 		and #(50) andJumpBNE(JumpControl,JumpFlush,notbneControl);
-		mux2x32to32  muxJump( PC4bnej,PC4bne, PCj, JumpControl);
+		mux2x32to32  muxJump( PCp1bnej,PCp1bne, PCj, JumpControl);
 
 		 // JR: Jump Register
 		assign PCjr = Bus_A_ALU;
-		mux2x32to32  muxJR( PCin,PC4bnej, PCjr, EX_JRControl);
+		mux2x32to32  muxJR( PCin,PCp1bnej, PCjr, EX_JRControl);
 
 		// Testbench signals
 		assign outPC = PC;
