@@ -2,11 +2,11 @@
 module MIPSpipeline_tb();
 
 reg clk, reset;
-logic [31:0] PC, instruction, WBRegData, mem_read, data, address, writedata;
+logic [31:0] PC, instruction, WBRegData;
 logic [5:0] WBReg;
-logic beqControl, writeen;
+logic beqControl;
 
-MIPSpipeline  dut(clk, reset, PC, instruction, WBRegData, WBReg, beqControl, data, address, writedata, writeen);
+MIPSpipeline  dut(clk, reset, PC, instruction, WBRegData, WBReg, beqControl);
 initial clk = 0;
 always #10000 clk = ~clk;
 

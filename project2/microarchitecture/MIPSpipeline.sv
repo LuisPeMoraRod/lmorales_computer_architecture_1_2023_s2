@@ -1,12 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl, data, address, writedata, writeen);
+module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
 		input clk, reset;
 
 		//output for testbenches
-		output [31:0] outPC, outInstruction, outWriteData, data, address, writedata;
+		output [31:0] outPC, outInstruction, outWriteData;
 		output [5:0] outWriteRegister;
-		output outBneControl, writeen;
+		output outBneControl;
 
 		wire [31:0] PC, PCin;
 		wire [31:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
@@ -220,9 +220,4 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		assign outWriteData = WB_WriteData;
 		assign outBneControl = beqControl;
 
-		assign data = MEM_ReadDataOfMem;
-		assign address = MEM_ALUResult;
-		assign writedata = WriteDataOfMem;
-		assign writeen = MEM_MemWrite;
- 
 endmodule
