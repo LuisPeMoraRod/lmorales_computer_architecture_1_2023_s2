@@ -118,10 +118,21 @@ set_global_assignment -name SYSTEMVERILOG_FILE testbenches/dataMem_tb.sv
 set_global_assignment -name EDA_TEST_BENCH_NAME dataMem_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id dataMem_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME dataMem_tb -section_id dataMem_tb
+set_global_assignment -name SYSTEMVERILOG_FILE testbenches/MIPSpipeline_tb.sv
+set_global_assignment -name EDA_TEST_BENCH_NAME MIPSpipeline_tb -section_id eda_simulation
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id MIPSpipeline_tb
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME MIPSpipeline_tb -section_id MIPSpipeline_tb
+set_global_assignment -name TEXT_FILE testbenches/slt_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/bne_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/beq_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/general_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/lw_test_instructions.txt
+set_global_assignment -name EDA_TEST_BENCH_NAME clock_divider_tb -section_id eda_simulation
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id clock_divider_tb
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME clock_divider_tb -section_id clock_divider_tb
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name SYSTEMVERILOG_FILE testbenches/MIPSpipeline_tb.sv
 set_global_assignment -name EDA_TEST_BENCH_FILE mips_16_tb.sv -section_id mips_16_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/register_tb.sv -section_id register_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/D_FF_tb.sv -section_id D_FF_tb
@@ -130,11 +141,6 @@ set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/Add_tb.sv -section_i
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/sign_extend_tb.sv -section_id sign_extend_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/InstructionMem_tb.sv -section_id InstructionMem_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/dataMem_tb.sv -section_id dataMem_tb
-set_global_assignment -name EDA_TEST_BENCH_NAME MIPSpipeline_tb -section_id eda_simulation
-set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id MIPSpipeline_tb
-set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME MIPSpipeline_tb -section_id MIPSpipeline_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/MIPSpipeline_tb.sv -section_id MIPSpipeline_tb
-set_global_assignment -name TEXT_FILE testbenches/slt_test_instructions.txt
-set_global_assignment -name TEXT_FILE testbenches/bne_test_instructions.txt
-set_global_assignment -name TEXT_FILE testbenches/beq_test_instructions.txt
+set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/clock_divider_tb.sv -section_id clock_divider_tb
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -3,7 +3,7 @@
     beq $a0, $a1, resta
 suma:
 	add $s0, $a0, $a1
-    xori $s1, $zero, 0xf
+    xori $a0, $zero, 0xf
     xori $s1, $zero, 0xf
     xori $s1, $zero, 0xf
     xori $s1, $zero, 0xf

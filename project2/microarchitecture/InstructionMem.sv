@@ -41,15 +41,16 @@ buf #1000 buf0(instruction[0],temp[0]),
 
 always @(address)
 begin
- temp=instrmem[address/4];
+//  temp=instrmem[address/4];
+ temp=instrmem[address];
 end
 
 initial
 begin
    // $readmemb("../../instr.txt", instrmem); //path for simulation
    // $readmemb("../../testbenches/slt_test_instructions.txt", instrmem); //path for simulation
-   $readmemb("../../testbenches/beq_test_instructions.txt", instrmem); //path for simulation
-   // $readmemb("instr.txt", instrmem);
+   $readmemb("../../testbenches/lw_test_instructions.txt", instrmem); //path for simulation
+   //$readmemb("instr.txt", instrmem);
 end
 
 endmodule

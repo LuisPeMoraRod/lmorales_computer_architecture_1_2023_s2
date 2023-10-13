@@ -10,7 +10,7 @@ assign address_ram = address[5:0]; //adjust to address size
 
 ram ram_data (
 	.address ( address_ram ),
-	.clock ( clk ),
+	.clock ( ~clk ),
 	.data ( writedata ),
 	.wren ( writeenable ),
 	.q ( data )

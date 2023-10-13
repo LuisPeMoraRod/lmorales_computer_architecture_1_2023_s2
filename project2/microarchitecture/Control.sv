@@ -69,7 +69,7 @@ casex (Opcode)
      Jump = 1'b0;
      SignZero= 1'b0; // sign extend
     end
- 6'b001110 : begin // XORI - XOR immidiate
+ 6'b001110 : begin // xori - XOR immidiate
      RegDst = 1'b0;
      ALUSrc = 1'b1;
      MemtoReg= 1'b0;

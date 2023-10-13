@@ -1,12 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
+module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl, data, address, writedata, writeen);
 		input clk, reset;
 
 		//output for testbenches
-		output [31:0] outPC, outInstruction, outWriteData;
+		output [31:0] outPC, outInstruction, outWriteData, data, address, writedata;
 		output [5:0] outWriteRegister;
-		output outBneControl;
+		output outBneControl, writeen;
 
 		wire [31:0] PC, PCin;
 		wire [31:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
@@ -25,7 +25,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		// ALU
 		wire [31:0] Bus_A_ALU,Bus_B_ALU,Bus_B_forwarded;
 		wire [31:0] EX_ALUResult,MEM_ALUResult,WB_ALUResult;
-		wire ZeroFlag, OverflowFlag, CarryFlag, NegativeFlag,notZeroFlag;
+		wire ZeroFlag, OverflowFlag, CarryFlag, NegativeFlag;
 
 		wire [31:0] WriteDataOfMem,MEM_ReadDataOfMem,WB_ReadDataOfMem;
 
@@ -37,7 +37,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		wire WB_MemtoReg,WB_RegWrite;
 		wire [1:0] ALUOp,ID_ALUOp,EX_ALUOp;
 		wire [1:0] ALUControl;
-		wire bneControl,notbneControl;
+		wire beqControl,notbeqControl;
 		wire JumpControl,JumpFlush;
 		wire [1:0] ForwardA,ForwardB;
 			 //flush
@@ -106,7 +106,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 
 		JRControl_Block JRControl_Block1( JRControl, ALUOp, Funct);
 
-		Discard_Instr Discard_Instr_Block(ID_flush,IF_flush,JumpControl,bneControl,EX_JRControl);
+		Discard_Instr Discard_Instr_Block(ID_flush,IF_flush,JumpControl,beqControl,EX_JRControl);
 
 		or #(50) OR_flush(flush,ID_flush,IFID_flush,Stall_flush);
 		flush_block flush_block1(ID_RegDst,ID_ALUSrc,ID_MemtoReg,ID_RegWrite,ID_MemRead,ID_MemWrite,ID_Branch,ID_ALUOp,
@@ -194,21 +194,19 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		StallControl StallControl_block(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,rs,rt,Opcode);
 
 		//Jump,bne, JRs
-		 // bne: Branch if not equal
-		shift_left_2 shiftleft2_bne(shiftleft2_bne_out, EX_Im16_Ext);
-		Add Add_bne(PCbne,EX_PCp1,shiftleft2_bne_out);
-		not #(50) notZero(notZeroFlag,ZeroFlag);
-		// and #(50) andbneControl(bneControl,EX_Branch,notZeroFlag);
-		and #(50) andbneControl(bneControl,EX_Branch,ZeroFlag); //testing without inverted flag for beq instead of bne
-		mux2x32to32  muxbneControl( PCp1bne,PCp1, PCbne, bneControl);
-		  // jump
-		shift_left_2 shiftleft2_jump(shiftleft2_jump_out, {6'b0,ID_Instruction[25:0]});
-		assign PCj = {ID_PCp1[31:28],shiftleft2_jump_out[27:0]};
+		 // beq: Branch on equal
+		
+		Add Add_bne(PCbne,EX_PCp1,EX_Im16_Ext); // use same immediate instead of imm * 4
+		and #(50) andbeqControl(beqControl,EX_Branch,ZeroFlag);
+		mux2x32to32  muxbeqControl( PCp1bne,PCp1, PCbne, beqControl);
+		
+		// jump
+		assign PCj = {ID_PCp1[31:28],{2'b0,ID_Instruction[25:0]}}; //assign PC the new address where to jump
 
 		not #(50) notIFIDFlush(notIFID_flush,IFID_flush);
 		and #(50) andJumpFlush(JumpFlush,Jump,notIFID_flush);
-		not #(50) notbne(notbneControl,bneControl);
-		and #(50) andJumpBNE(JumpControl,JumpFlush,notbneControl);
+		not #(50) notbne(notbeqControl,beqControl);
+		and #(50) andJumpBNE(JumpControl,JumpFlush,notbeqControl);
 		mux2x32to32  muxJump( PCp1bnej,PCp1bne, PCj, JumpControl);
 
 		 // JR: Jump Register
@@ -220,6 +218,11 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		assign outInstruction = Instruction;
 		assign outWriteRegister = WB_WriteRegister;
 		assign outWriteData = WB_WriteData;
-		assign outBneControl = bneControl;
+		assign outBneControl = beqControl;
+
+		assign data = MEM_ReadDataOfMem;
+		assign address = MEM_ALUResult;
+		assign writedata = WriteDataOfMem;
+		assign writeen = MEM_MemWrite;
  
 endmodule
