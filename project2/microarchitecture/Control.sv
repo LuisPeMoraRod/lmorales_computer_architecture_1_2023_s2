@@ -11,19 +11,22 @@ Branch,
 ALUOp,
 Jump,
 SignZero,
-Opcode
+Opcode,
+Funct
 );
 
 output RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,Jump,SignZero;
 output [1:0] ALUOp;
-input [5:0] Opcode;
+input [5:0] Opcode, Funct;
 reg RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,Jump,SignZero;
 reg [1:0] ALUOp;
+logic isShift;
+assign isShift = (Funct == 6'h00) || (Funct == 6'h02);
 always @(*)
 casex (Opcode)
  6'b000000 : begin // R - type
      RegDst = 1'b1;
-     ALUSrc = 1'b0;
+     ALUSrc = (isShift) ? 1'b1 : 1'b0;
      MemtoReg= 1'b0;
      RegWrite= 1'b1;
      MemRead = 1'b0;

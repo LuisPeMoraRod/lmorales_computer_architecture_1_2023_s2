@@ -1,12 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
+module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl, outBussB, outAluSrc, outAlu);
 		input clk, reset;
 
 		//output for testbenches
-		output [31:0] outPC, outInstruction, outWriteData;
+		output [31:0] outPC, outInstruction, outWriteData, outBussB, outAlu;
 		output [5:0] outWriteRegister;
-		output outBneControl;
+		output outBneControl, outAluSrc;
 
 		wire [31:0] PC, PCin;
 		wire [31:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
@@ -36,7 +36,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		wire MEM_MemtoReg,MEM_RegWrite,MEM_MemRead,MEM_MemWrite;
 		wire WB_MemtoReg,WB_RegWrite;
 		wire [1:0] ALUOp,ID_ALUOp,EX_ALUOp;
-		wire [1:0] ALUControl;
+		wire [2:0] ALUControl;
 		wire beqControl,notbeqControl;
 		wire JumpControl,JumpFlush;
 		wire [1:0] ForwardA,ForwardB;
@@ -80,7 +80,8 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		ALUOp,
 		Jump,
 		SignZero,
-		Opcode
+		Opcode,
+		Funct
 		);
 
 		 // Regfile
@@ -219,5 +220,8 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		assign outWriteRegister = WB_WriteRegister;
 		assign outWriteData = WB_WriteData;
 		assign outBneControl = beqControl;
+		assign outAluSrc = EX_ALUSrc;
+		assign outBussB = Bus_B_ALU;
+		assign outAlu = EX_ALUResult;
 
 endmodule
