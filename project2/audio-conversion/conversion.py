@@ -50,4 +50,19 @@ with open('mp3_q7.8.txt', 'w') as q7_8_signed_file:
             
             q7_8_signed_file.write(format(q7_8_value, '016b') + '\n')
             
+# Abre un archivo de texto en el que escribirás los valores en formato hexadecimal sin "0x"
+with open('final.txt', 'w') as hex_clean_file:
+    # Abre el archivo de valores en formato Q7.8 con bit de signo
+    with open('mp3_q7.8.txt', 'r') as q7_8_signed_file:
+        for line in q7_8_signed_file:
+            q7_8_value = int(line.strip(), 2)  # Convierte el valor binario a entero
+            
+            # Convierte el valor a formato hexadecimal y quita el "0x"
+            hex_value = hex(q7_8_value)[2:]
+            
+            # Asegúrate de que el valor tenga una longitud de 4 caracteres (incluyendo ceros a la izquierda si es necesario)
+            hex_value = hex_value.zfill(4)
+            
+            # Escribe el valor en formato hexadecimal sin "0x" en el archivo de texto
+            hex_clean_file.write(hex_value + '\n')
 
