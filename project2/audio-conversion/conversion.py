@@ -24,4 +24,30 @@ with open('mp3_decimal.txt', 'w') as decimal_file:
             	valor = div-1
             	decimal_file.write(str(valor) + '\n')
             	
+# Abre un archivo de texto en el que escribirás los valores en formato Q7.8 con bit de signo
+with open('mp3_q7.8.txt', 'w') as q7_8_signed_file:
+    # Abre el archivo de valores decimales ajustados
+    with open('mp3_decimal.txt', 'r') as decimal_adjusted_file:
+        for line in decimal_adjusted_file:
+            decimal_value = float(line.strip())
+            
+            # Determina el bit de signo
+            if decimal_value < 0:
+                sign_bit = 1
+                # Convierte el valor decimal negativo a su valor absoluto
+                decimal_value = abs(decimal_value)
+            else:
+                sign_bit = 0
+            
+            # Convierte el valor decimal a Q7.8
+            if decimal_value > 1.0:
+                decimal_value = 1.0
+            
+            int_part = int(decimal_value * 128)
+            frac_part = int((decimal_value * 128 - int_part) * 256)
+            
+            q7_8_value = (sign_bit << 15) | (int_part << 8) | frac_part
+            
+            q7_8_signed_file.write(format(q7_8_value, '016b') + '\n')
+            
 
