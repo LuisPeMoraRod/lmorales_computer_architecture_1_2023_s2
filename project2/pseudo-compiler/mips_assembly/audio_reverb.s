@@ -15,6 +15,10 @@ _start:
 	la $s0, audio_0 # Registro $t0 representará al registro a0
 	lw $s0, ($s0)	# $a0 ya estará al inicio del programa
 	
+	# Valor del inicio de los datos del audio 2.
+	la $s1, audio_1 # Registro $t0 representará al registro a0
+	lw $s1, ($s1)	# $a1 ya estará al inicio del programa
+	
 	# Se guardan valores en los espacios de memoria donde iria
 	# el audio 1. Todos estos datos ya estarán en memoria
 	
@@ -32,10 +36,24 @@ _start:
 	xori $t2, $zero, 0
 	xori $t3, $zero, 0
 	
+	# test number 1
+	# xori $t6, $zero, 8
+	# xori $t7, $zero, 192
+	
+	# test number 2
+	# xori $t8, $zero, 4
+	# xori $t9, $zero, 128
+	
 	# ------------------------------------------------------------------------
 
 	
 set_data:
+
+	# Se guarda el valor de la posicion del primer dato de audio
+	# en el registro del otro audio que no se está utilizando
+	add $s1, $s0, $zero
+
+	# ------------------------------------------------------------------------
 
 	# Obtener el valor de la cantidad de datos por audio
 	
@@ -55,14 +73,24 @@ set_data:
 	
 	# ------------------------------------------------------------------------
 
+	# Trae el valor de k
+	
+	# Este seria un xori con el valor del address exacto donde esta el dato
+	# xori $t1, $zero, 0x00001
+	la $t3, k		# Address de donde esta el valor de k
+	# Este valor es entero, por lo que no cumple con los primeros 8 bits de
+	# parte fraccionaria
+	lw $t3, ($t3)	# Guarda el valor de k en reg $t3
+	
+	# ------------------------------------------------------------------------
+
 	# Trae el valor de alpha
 	
 	# Este seria un xori con el valor del address exacto donde esta el dato
 	# xori $t1, $zero, 0x00000
 	la $t1, alpha_b		# Address de donde esta alpha (cantidad de datos)
-	# Este valor sería decimal, así que en teoría los primeros 8 bits es 
+	# Este valor sería fraccional, así que en teoría los primeros 8 bits es 
 	# la parte decimal y los siguientes 8 son la parte entera con el signo
-	# keep
 	lw $t1, ($t1)	# Guarda el valor de alpha en reg $t1
 	
 	# ------------------------------------------------------------------------
@@ -76,12 +104,12 @@ set_data:
 	xori $t7, $zero, 0
 	
 	# Se ingresa alpha en el registro entero del segundo operando
-	add $t8, $zero, $t1
+	add $t8, $t1, $zero
 	# Para dejar solo la parte entera ($t8 >> 8)
 	srl $t8, $t8, 8 	# shift right logical
 	
 	# Se ingresa alpha en el registro fraccionario del segundo operando
-	add $t9, $zero, $t1
+	add $t9, $t1, $zero
 	# Para dejar solo la parte decimal ($t9 << 16)
 	# Para este ejemplo en MIPS ($t9 << 24)
 	sll $t9, $t9, 24 	# shift left logical
@@ -98,28 +126,20 @@ set_data:
 	# 1 en script real (4 para ejemplo de MIPS)
 	#add $s1, pc, 4
 	
-	
 	# jal en ejemplo MIPS para continuar en la siguiente instruccion
 	# despues de hacer un j a la resta
 	jal sub
 	
+	# ------------------------------------------------------------------------
 	
 	
-	# ACOMODAR EL RESULTADO DE LA RESTA EN LOS REGISTROS $t6 y $t7
-	# PARA CONTINUAR CON LA MULTIPLICACION SIGUIENTE CON X(N)
-	# O ACOMODAR EN REGISTROS FIJOS PARA LA MULTIPLICACION EN
-	# TODAS LAS ITERACIONES
-	
-	
-	
-	# test number 1
-	# xori $t6, $zero, 8
-	# xori $t7, $zero, 192
-	
-	# test number 2
-	# xori $t8, $zero, 4
-	# xori $t9, $zero, 128
-	
+	# Como el resultado de la resta queda en $t5 se pasará
+	# al registro $t2 para mantener ahí (1 - alpha)
+	add $t2, $t5, $zero
+	# Para acomodar la parte entera
+	#sll $t2, $t2, 8 	# shift left logical
+	# Se suma la parte fraccionaria
+	#add $t2, $t2, $t5
 	
 	
 reverb:
@@ -131,18 +151,96 @@ reverb:
 	
 	# Traer el dato x(n) de memoria
 
+	# Se trae x(n) en el registro para acomodarlo como segundo operando
 	lw $t8, ($s0)	# $a0 estara en la n de la posicion del audio actual
 	
+	# Se ingresa x(n) en el registro fraccionario del segundo operando
+	add $t9, $t8, $zero
 	
-	# ACOMODAR EL DATO EN LOS VALORES PARA LA MULTIPLICACION
+	# Se acomodará ahora para dejarlo bien en los dos registros
 	
+	# Para dejar solo la parte entera ($t8 >> 8)
+	srl $t8, $t8, 8 	# shift right logical
+	
+	# Para dejar solo la parte decimal ($t9 << 16)
+	# Para este ejemplo en MIPS ($t9 << 24)
+	sll $t9, $t9, 24 	# shift left logical
+	# Se acomoda en los primeros valores para poder se utilizado ($t9 >> 16)
+	# Para este ejemplo en MIPS ($t9 >> 24)
+	srl $t9, $t9, 24 	# shift right logical
+	
+	# ------------------------------------------------------------------------
+	
+	# Preparar (1 - alpha) para multiplicar
+	
+	# Se ingresa (1 - alpha) en el registro entero del primer operando
+	# y en el fraccionario
+	add $t6, $t2, $zero
+	add $t7, $t2, $zero
+	
+	# Se acomodará ahora para dejarlo bien en los dos registros
+	
+	# Para dejar solo la parte entera ($t6 >> 8)
+	srl $t6, $t6, 8 	# shift right logical
+	
+	# Para dejar solo la parte decimal ($t7 << 16)
+	# Para este ejemplo en MIPS ($t7 << 24)
+	sll $t7, $t7, 24 	# shift left logical
+	# Se acomoda en los primeros valores para poder se utilizado ($t7 >> 16)
+	# Para este ejemplo en MIPS ($t7 >> 24)
+	srl $t7, $t7, 24 	# shift right logical
+	
+	# ------------------------------------------------------------------------
 	
 	# Multiplicar (1 - alpha) con x(n)
 	
-	# Guardar resultado en reg 
+	# GUARDAR VALORES EN REGISTROS EN STACK PARA SER UTILIZADOS
+	# EN LA SUBRUTINA DE MULTIPLICACION
+	# $t0 -> dirección final
+	# $t1 -> alpha 16 bits
+	# $t2 -> (1 - alpha) 16 bits
+	# $t3 -> k (valor entero, sin parte fraccionaria)
+	
+	# Para guardar la posicion de la siguiente instruccion se utilizara
+	# posiblemente el registro del audio que no se está utilizando
+	# Se restablece el registo $a1 ($s1 en ejemplo de MIPS)
+	# Se añade la cantidad de posiciones para la siguiente instruccion
+	# 1 en script real (4 para ejemplo de MIPS)
+	#add $s1, pc, 4
+	
+	# jal en ejemplo MIPS para continuar en la siguiente instruccion
+	# despues de hacer un j a la resta
+	jal mult
+	
+	# ------------------------------------------------------------------------
+	
+	# Guardar resultado 16 bits ($t0) en reg del valor proximo y(n) 16 bits ($t3)
+	add $t4, $zero, $t0
+	
+	# REESTABLECER VALORES EN REGISTROS EN STACK PARA SER UTILIZADOS
+	# CON LOS VALORES DE REGISTROS NORMALES
+	# $t0 -> dirección final
+	# $t1 -> alpha 16 bits
+	# $t2 -> (1 - alpha) 16 bits
+	# $t3 -> k (valor entero, sin parte fraccionaria)
+	
 	
 	# Comp si ya se puede sumar el valor anterior de y(n)
-	# si k >= n
+	# si k > n
+	
+	# SOLO PARA LA COMPARACION
+	
+	# $s0, la posicion actual del audio, se le resta $s1, que posee la posicion
+	# inicial del audio. Esto da la cantidad de datos que se han computado ($t6)
+	# Mientras k sea mayor a este valor no se puede hace la parte de
+	# + alpha * y(n - k) de la función para obtener y(n)
+	
+	sub $t6, $s0, $s1
+	
+	# Si k es mayor pasa a guardar el valor en el buffer circular
+	bgt $t3, $t6, save_yn
+	
+	# Como ya se puede obtener y(n - k)
 	
 	# 	Calcular n - k
 	
@@ -153,12 +251,29 @@ reverb:
 	#	Sumar al resultado en reg $t1
 	
 	# GUARDAR EL Y(N) EN BUFFER CIRCULAR
-	
+	j save_yn
 	
 	
 	# TESTING ONLY
 	j end
 	
+	
+save_yn:
+
+	# PROCESO DE GUARDADO DE Y(n) EN EL BUFFER CIRCULAR
+	
+	
+
+	# ------------------------------------------------------------------------
+	
+	# Para sumarle uno a la posicion del audio, se ingresa un 1 a un registro temp
+	xori $t9, $zero, 1
+	
+	# Se le suma 1 a la posicion del audio actual
+	add $s0, $s0, $t9
+	
+	# Vuelve al inicio del ciclo
+	j reverb
 
 
 # ------------------------------- OPERACIONES -------------------------------- #
@@ -168,6 +283,17 @@ sum:
 	add $t4, $t6, $t7
 	# c + d
 	add $t5, $t8, $t9
+	
+	# Como el resultado de la suma queda en $t4 y $t5 se pasarán
+	# al registro $t5 para mantener ahí el resultado completo en 16 bits
+	# Para acomodar la parte entera
+	sll $t4, $t4, 8 	# shift left logical
+	# Se suma la parte fraccionaria
+	add $t5, $t4, $t5
+	
+	# Para retornar a la siguiente instruccion desde donde se llamó
+	# $ra guarda la direccion de esa instruccion en ejemplo de MIPS
+	j $ra
 
 
 sub:
@@ -175,6 +301,13 @@ sub:
 	sub $t4, $t6, $t7
 	# c - d
 	sub $t5, $t8, $t9
+	
+	# Como el resultado de la resta queda en $t4 y $t5 se pasarán
+	# al registro $t5 para mantener ahí el resultado completo en 16 bits
+	# Para acomodar la parte entera
+	sll $t4, $t4, 8 	# shift left logical
+	# Se suma la parte fraccionaria
+	add $t5, $t4, $t5
 	
 	# Para retornar a la siguiente instruccion desde donde se llamó
 	# $ra guarda la direccion de esa instruccion en ejemplo de MIPS
@@ -210,6 +343,10 @@ mult:
 	# Genera el resultado
 	add $t0, $t1, $t2
 	add $t0, $t0, $t3
+	
+	# Para retornar a la siguiente instruccion desde donde se llamó
+	# $ra guarda la direccion de esa instruccion en ejemplo de MIPS
+	j $ra
 	
 # ---------------------------------------------------------------------------- #
 
