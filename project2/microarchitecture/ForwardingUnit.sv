@@ -4,16 +4,16 @@ module ForwardingUnit(ForwardA,ForwardB,MEM_RegWrite,WB_RegWrite,MEM_WriteRegist
 	output [1:0] ForwardA,ForwardB;
 	wire [1:0] ForwardA,ForwardB;
 	input MEM_RegWrite,WB_RegWrite;
-	input [4:0] MEM_WriteRegister,WB_WriteRegister,EX_rs,EX_rt;
+	input [3:0] MEM_WriteRegister,WB_WriteRegister,EX_rs,EX_rt;
 
 	// a= 1 if ( MEM_WriteRegister != 0 )
-	or #(50) orMEM_WriteReg(a,MEM_WriteRegister[4],MEM_WriteRegister[3],MEM_WriteRegister[2],MEM_WriteRegister[1],MEM_WriteRegister[0]);
+	or #(50) orMEM_WriteReg(a,MEM_WriteRegister[3],MEM_WriteRegister[2],MEM_WriteRegister[1],MEM_WriteRegister[0]);
 	CompareAddress CompMEM_WriteReg_EXrs(b,MEM_WriteRegister,EX_rs);
 	and #(50) andx(x,MEM_RegWrite,a,b);
 	// x=1 if ((MEM_RegWrite==1)&&(MEM_WriteRegister != 0)&&(MEM_WriteRegister==EX_rs))
 
 	// c= 1 if ( WB_WriteRegister != 0 )
-	or #(50) orWB_WriteReg(c,WB_WriteRegister[4],WB_WriteRegister[3],WB_WriteRegister[2],WB_WriteRegister[1],WB_WriteRegister[0]);
+	or #(50) orWB_WriteReg(c,WB_WriteRegister[3],WB_WriteRegister[2],WB_WriteRegister[1],WB_WriteRegister[0]);
 	CompareAddress CompWB_WriteReg_EXrs(d,WB_WriteRegister,EX_rs);
 	and #(50) andy(y,WB_RegWrite,c,d);
 	// y=1 if ((WB_RegWrite==1)&&(WB_WriteRegister != 0)&&(WB_WriteRegister==EX_rs))
