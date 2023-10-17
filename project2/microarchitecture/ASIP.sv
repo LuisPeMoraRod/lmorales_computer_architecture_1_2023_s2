@@ -1,33 +1,34 @@
 `timescale 1 ps / 100 fs
-// Top level Verilog code for 32-bit 5-stage Pipelined MIPS Processor 
-module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
+// Top level Verilog code for 24-bit 5-stage Pipelined ASIP Processor 
+module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
 		input clk, reset;
 
 		//output for testbenches
-		output [31:0] outPC, outInstruction, outWriteData;
+		output [23:0] outPC, outInstruction, outWriteData;
 		output [5:0] outWriteRegister;
 		output outBneControl;
 
-		wire [31:0] PC, PCin;
-		wire [31:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
-		wire [31:0] PCbne,PCp1bne,PCj,PCp1bnej,PCjr; // PC signals in MUX
-		wire [31:0] Instruction,ID_Instruction,EX_Instruction; // Output of Instruction Memory
-		wire [5:0] Opcode,Funct; // Opcode, Funct
+		wire [23:0] PC, PCin;
+		wire [23:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
+		wire [23:0] PCbne,PCp1bne,PCj,PCp1bnej,PCjr; // PC signals in MUX
+		wire [23:0] Instruction,ID_Instruction,EX_Instruction; // Output of Instruction Memory
+		wire [2:0] Opcode;
+		wire [3:0] Funct;
 
 		// Extend
-		wire [15:0] imm16; // immediate in I type instruction
-		wire [31:0] Im16_Ext,EX_Im16_Ext;
-		wire [31:0] sign_ext_out,zero_ext_out;
+		wire [15:0] imm13; // immediate in I type instruction
+		wire [23:0] Im13_Ext,EX_Im13_Ext;
+		wire [23:0] sign_ext_out,zero_ext_out;
 		// regfile
-		wire [4:0] rs,rt,rd,EX_rs,EX_rt,EX_rd,EX_WriteRegister,MEM_WriteRegister,WB_WriteRegister;
-		wire [31:0] WB_WriteData, ReadData1, ReadData2,ReadData1Out,ReadData2Out, EX_ReadData1, EX_ReadData2;
+		wire [3:0] rs,rt,rd,EX_rs,EX_rt,EX_rd,EX_WriteRegister,MEM_WriteRegister,WB_WriteRegister;
+		wire [23:0] WB_WriteData, ReadData1, ReadData2,ReadData1Out,ReadData2Out, EX_ReadData1, EX_ReadData2;
 
 		// ALU
-		wire [31:0] Bus_A_ALU,Bus_B_ALU,Bus_B_forwarded;
-		wire [31:0] EX_ALUResult,MEM_ALUResult,WB_ALUResult;
+		wire [23:0] Bus_A_ALU,Bus_B_ALU,Bus_B_forwarded;
+		wire [23:0] EX_ALUResult,MEM_ALUResult,WB_ALUResult;
 		wire ZeroFlag, gtFlag, BFlag, OverflowFlag, CarryFlag, NegativeFlag;
 
-		wire [31:0] WriteDataOfMem,MEM_ReadDataOfMem,WB_ReadDataOfMem;
+		wire [23:0] WriteDataOfMem,MEM_ReadDataOfMem,WB_ReadDataOfMem;
 
 		//Control signals 
 		wire RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,BranchSrc,Jump,SignZero,JRControl;
@@ -43,14 +44,14 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 			 //flush
 		wire IF_flush,IFID_flush,notIFID_flush,Stall_flush,flush;
 		//shift left
-		wire [31:0] shiftleft2_bne_out,shiftleft2_jump_out; // shift left output
+		wire [23:0] shiftleft2_bne_out,shiftleft2_jump_out; // shift left output
 		// PC Write Enable, IF/ID Write Enable
 		wire PC_WriteEn,IFID_WriteEn;
 
 
 		//====== PC register======
 		register PC_Reg(PC,PCin,PC_WriteEn,reset,clk);
-		Add Add1(PCp1,PC,{29'b0,3'b001}); // PCp1 = PC + 1
+		Add Add1(PCp1,PC,{23'b0,1'b1}); // PCp1 = PC + 1
 
 		InstructionMem InstructionMem1(Instruction, PC);
 
@@ -61,12 +62,12 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		RegBit IF_flush_bit(IFID_flush,IF_flush, IFID_WriteEn,reset, clk);
 
 		//========= ID STAGE===========
-		assign Opcode = ID_Instruction[31:26];
-		assign Funct = ID_Instruction[5:0];
-		assign rs = ID_Instruction[25:21];
-		assign rt = ID_Instruction[20:16];
-		assign rd = ID_Instruction[15:11];
-		assign imm16= ID_Instruction[15:0];
+		assign Opcode = ID_Instruction[23:21];
+		assign rs = ID_Instruction[20:17];
+		assign rt = ID_Instruction[16:13];
+		assign rd = ID_Instruction[12:9];
+		assign Funct = ID_Instruction[3:0];
+		assign imm13= ID_Instruction[12:0];
 
 		 // Main Control
 		Control MainControl(
@@ -100,11 +101,11 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		// forward Read Data if Write and Read at the same time
 		WB_forward  WB_forward_block(ReadData1Out,ReadData2Out,ReadData1,ReadData2,rs,rt,WB_WriteRegister,WB_WriteData,WB_RegWrite);
 		 // Sign-extend
-		sign_extend sign_extend1(sign_ext_out,imm16);
+		sign_extend sign_extend1(sign_ext_out,imm13);
 		 // Zero-extend
-		zero_extend zero_extend1(zero_ext_out,imm16);
+		zero_extend zero_extend1(zero_ext_out,imm13);
 		 // immediate extend: sign or zero
-		mux2x32to32 muxSignZero( Im16_Ext,sign_ext_out,zero_ext_out, SignZero);
+		mux2to1 #(24) muxSignZero( Im13_Ext,sign_ext_out,zero_ext_out, SignZero);
 
 		JRControl_Block JRControl_Block1( JRControl, ALUOp, Funct);
 
@@ -122,8 +123,8 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		register IDEX_ReadData2(EX_ReadData2,ReadData2Out,1'b1,reset,clk);
 
 
-		register IDEX_Im16_Ext(EX_Im16_Ext,Im16_Ext,1'b1,reset,clk);
-		register IDEX_rs_rt_rd(EX_Instruction[31:0],ID_Instruction,1'b1,reset,clk);
+		register IDEX_Im13_Ext(EX_Im13_Ext,Im13_Ext,1'b1,reset,clk);
+		register IDEX_rs_rt_rd(EX_Instruction[23:0],ID_Instruction,1'b1,reset,clk);
 		assign EX_rs = EX_Instruction[25:21];
 		assign EX_rt = EX_Instruction[20:16];
 		assign EX_rd = EX_Instruction[15:11];
@@ -145,10 +146,10 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		mux3x32to32  mux3A(Bus_A_ALU,EX_ReadData1,MEM_ALUResult,WB_WriteData,ForwardA);
 		mux3x32to32  mux3B(Bus_B_forwarded,EX_ReadData2,MEM_ALUResult,WB_WriteData,ForwardB);
 		// mux 2x32 to 32 to select source Bus B of ALU
-		mux2x32to32 muxALUSrc( Bus_B_ALU,Bus_B_forwarded,EX_Im16_Ext, EX_ALUSrc);
+		mux2to1 #(24) muxALUSrc( Bus_B_ALU,Bus_B_forwarded,EX_Im13_Ext, EX_ALUSrc);
 		// ALU Control
-		ALUControl_Block ALUControl_Block1( ALUControl, EX_ALUOp, EX_Im16_Ext[5:0]);
-		// EX_Im16_Ext[5:0] is funct
+		ALUControl_Block ALUControl_Block1( ALUControl, EX_ALUOp, EX_Im13_Ext[5:0]);
+		// EX_Im13_Ext[5:0] is funct
 
 		// ALU
 		alu alu_block(EX_ALUResult, CarryFlag, ZeroFlag, gtFlag, OverflowFlag, NegativeFlag, Bus_A_ALU, Bus_B_ALU, ALUControl);
@@ -191,7 +192,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		RegBit  MEMWB_RegWrite(WB_RegWrite, MEM_RegWrite, 1'b1,reset, clk);
 
 		 // Select Data to WriteData for regfile
-		mux2x32to32 muxMemtoReg( WB_WriteData, WB_ALUResult, WB_ReadDataOfMem,WB_MemtoReg);
+		mux2to1 #(24) muxMemtoReg( WB_WriteData, WB_ALUResult, WB_ReadDataOfMem,WB_MemtoReg);
 
 		//Stalling
 		StallControl StallControl_block(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,rs,rt,Opcode);
@@ -199,10 +200,10 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		//Jump,beq, JRs
 		 // beq: Branch on equal
 		
-		Add Add_beq(PCbne,EX_PCp1,EX_Im16_Ext); // use same immediate instead of imm * 4
+		Add Add_beq(PCbne,EX_PCp1,EX_Im13_Ext); // use same immediate instead of imm * 4
 		assign BFlag = (EX_BranchSrc) ? gtFlag : ZeroFlag;
 		and #(50) andbranchControl(branchControl,EX_Branch, BFlag);
-		mux2x32to32  muxbranchControl( PCp1bne,PCp1, PCbne, branchControl);
+		mux2to1 #(24)  muxbranchControl( PCp1bne,PCp1, PCbne, branchControl);
 		
 		// jump
 		assign PCj = {ID_PCp1[31:28],{2'b0,ID_Instruction[25:0]}}; //assign PC the new address where to jump
@@ -211,11 +212,11 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		and #(50) andJumpFlush(JumpFlush,Jump,notIFID_flush);
 		not #(50) notbne(notbranchControl,branchControl);
 		and #(50) andJumpBNE(JumpControl,JumpFlush,notbranchControl);
-		mux2x32to32  muxJump( PCp1bnej,PCp1bne, PCj, JumpControl);
+		mux2to1 #(24)  muxJump( PCp1bnej,PCp1bne, PCj, JumpControl);
 
 		 // JR: Jump Register
 		assign PCjr = Bus_A_ALU;
-		mux2x32to32  muxJR( PCin,PCp1bnej, PCjr, EX_JRControl);
+		mux2to1 #(24)  muxJR( PCin,PCp1bnej, PCjr, EX_JRControl);
 
 		// Testbench signals
 		assign outPC = PC;
