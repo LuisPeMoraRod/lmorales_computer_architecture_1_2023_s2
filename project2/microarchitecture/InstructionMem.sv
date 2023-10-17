@@ -1,10 +1,10 @@
 `timescale 1 ps / 100 fs
-module InstructionMem(instruction, address);
+module InstructionMem #(parameter N=24) (instruction, address);
 
-input [31:0] address;
-output [31:0] instruction;
-reg [31:0]instrmem[1023:0];
-reg [31:0] temp;
+input [N-1:0] address;
+output [N-1:0] instruction;
+reg [N-1:0]instrmem[1023:0];
+reg [N-1:0] temp;
 
 buf #1000 buf0(instruction[0],temp[0]),
    buf1(instruction[1],temp[1]),
@@ -29,15 +29,7 @@ buf #1000 buf0(instruction[0],temp[0]),
    buf20(instruction[20],temp[20]),
    buf21(instruction[21],temp[21]),
    buf22(instruction[22],temp[22]),
-   buf23(instruction[23],temp[23]),
-   buf24(instruction[24],temp[24]),
-   buf25(instruction[25],temp[25]),
-   buf26(instruction[26],temp[26]),
-   buf27(instruction[27],temp[27]),
-   buf28(instruction[28],temp[28]),
-   buf29(instruction[29],temp[29]),
-   buf30(instruction[30],temp[30]),
-   buf31(instruction[31],temp[31]);
+   buf23(instruction[23],temp[23]);
 
 always @(address)
 begin
