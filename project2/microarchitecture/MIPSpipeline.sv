@@ -37,7 +37,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		wire WB_MemtoReg,WB_RegWrite;
 		wire [1:0] ALUOp,ID_ALUOp,EX_ALUOp;
 		wire [2:0] ALUControl;
-		wire beqControl,notbeqControl;
+		wire branchControl,notbranchControl;
 		wire JumpControl,JumpFlush;
 		wire [1:0] ForwardA,ForwardB;
 			 //flush
@@ -108,7 +108,7 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 
 		JRControl_Block JRControl_Block1( JRControl, ALUOp, Funct);
 
-		Discard_Instr Discard_Instr_Block(ID_flush,IF_flush,JumpControl,beqControl,EX_JRControl);
+		Discard_Instr Discard_Instr_Block(ID_flush,IF_flush,JumpControl,branchControl,EX_JRControl);
 
 		or #(50) OR_flush(flush,ID_flush,IFID_flush,Stall_flush);
 		flush_block flush_block1(ID_RegDst,ID_ALUSrc,ID_MemtoReg,ID_RegWrite,ID_MemRead,ID_MemWrite,ID_Branch,ID_BranchSrc,ID_ALUOp,
@@ -201,16 +201,16 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		
 		Add Add_beq(PCbne,EX_PCp1,EX_Im16_Ext); // use same immediate instead of imm * 4
 		assign BFlag = (EX_BranchSrc) ? gtFlag : ZeroFlag;
-		and #(50) andbeqControl(beqControl,EX_Branch, BFlag);
-		mux2x32to32  muxbeqControl( PCp1bne,PCp1, PCbne, beqControl);
+		and #(50) andbranchControl(branchControl,EX_Branch, BFlag);
+		mux2x32to32  muxbranchControl( PCp1bne,PCp1, PCbne, branchControl);
 		
 		// jump
 		assign PCj = {ID_PCp1[31:28],{2'b0,ID_Instruction[25:0]}}; //assign PC the new address where to jump
 
 		not #(50) notIFIDFlush(notIFID_flush,IFID_flush);
 		and #(50) andJumpFlush(JumpFlush,Jump,notIFID_flush);
-		not #(50) notbne(notbeqControl,beqControl);
-		and #(50) andJumpBNE(JumpControl,JumpFlush,notbeqControl);
+		not #(50) notbne(notbranchControl,branchControl);
+		and #(50) andJumpBNE(JumpControl,JumpFlush,notbranchControl);
 		mux2x32to32  muxJump( PCp1bnej,PCp1bne, PCj, JumpControl);
 
 		 // JR: Jump Register
@@ -222,6 +222,6 @@ module MIPSpipeline(clk, reset, outPC, outInstruction, outWriteData, outWriteReg
 		assign outInstruction = Instruction;
 		assign outWriteRegister = WB_WriteRegister;
 		assign outWriteData = WB_WriteData;
-		assign outBneControl = beqControl;
+		assign outBneControl = branchControl;
 
 endmodule

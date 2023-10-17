@@ -12,16 +12,16 @@ module alu (
     output overflow;       // Overflow Flag
     output negative;        // Negative Flag
 
-	logic [31:0] output_add, output_sub, slt, xori, output_sll, output_srl;
-	logic C_add, C_sub, Z_add, Z_sub, V_add, V_sub, N_add, N_sub, gt_sub;
+	logic [31:0] add, sub, slt, xori, sll, srl, mult;
+	logic C_add, C_sub, C_mult, Z_add, Z_sub, Z_mult, V_add, V_sub, V_mult, N_add, N_sub, N_mult, gt_sub;
 	logic [5:0] shamt;
 	assign shamt = BussB[10:6];
 
 	//add
-	adder_32bits add(.A(BussA), .B(BussB), .Cin(0), .R(output_add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
+	adder_32bits adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
 	
 	//sub
-	adder_32bits sub(.A(BussA), .B(BussB), .Cin(1), .R(output_sub), .C(C_sub), .N(N_sub), .V(V_sub), .Z(Z_sub));
+	adder_32bits subtractor(.A(BussA), .B(BussB), .Cin(1), .R(sub), .C(C_sub), .N(N_sub), .V(V_sub), .Z(Z_sub));
 	assign gt_sub = ~N_sub & ~V_sub & ~Z_sub;
 
 	//xori
@@ -31,16 +31,19 @@ module alu (
 	assign slt = (BussA < BussB) ? 32'b1 : 32'b0;
 	
 	//shift left logical
-	assign output_sll = BussA << shamt;
+	assign sll = BussA << shamt;
 
 	//shift right logical 
-	assign output_srl = BussA >> shamt;
+	assign srl = BussA >> shamt;
 
-	mux6to1 #(32) mux_result(output_add, xori, output_sub, slt, output_sll, output_srl, ALUControl, Output);
-	mux6to1 #(1) mux_C(C_add, 0, C_sub, 0, 0, 0, ALUControl, CarryOut);
-	mux6to1 #(1) mux_Z(Z_add, 0, Z_sub, 0, 0, 0, ALUControl, zero);
-	mux6to1 #(1) mux_V(V_add, 0, V_sub, 0, 0, 0, ALUControl, overflow);
-	mux6to1 #(1) mux_N(N_add, 0, N_sub, 0, 0, 0, ALUControl, negative);
-	mux6to1 #(1) mux_gt(0, 0, gt_sub, 0, 0, 0, ALUControl, gt);
+	//multiplication
+	multiplicator #(32) multi(BussA, BussB, mult, Z_mult, C_mult, V_mult, N_mult);
+
+	mux7to1 #(32) mux_result(add, xori, sub, slt, sll, srl, mult, ALUControl, Output);
+	mux7to1 #(1) mux_C(C_add, 0, C_sub, 0, 0, 0, C_mult, ALUControl, CarryOut);
+	mux7to1 #(1) mux_Z(Z_add, 0, Z_sub, 0, 0, 0, Z_mult, ALUControl, zero);
+	mux7to1 #(1) mux_V(V_add, 0, V_sub, 0, 0, 0, V_mult, ALUControl, overflow);
+	mux7to1 #(1) mux_N(N_add, 0, N_sub, 0, 0, 0, N_mult, ALUControl, negative);
+	mux7to1 #(1) mux_gt(0, 0, gt_sub, 0, 0, 0, 0, ALUControl, gt);
 
 endmodule

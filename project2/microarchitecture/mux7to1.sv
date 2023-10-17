@@ -1,11 +1,12 @@
-module mux6to1 #(parameter N = 32) (
+module mux7to1 #(parameter N = 32) (
     input wire [N-1:0] D0,  // Data input 0
     input wire [N-1:0] D1,  // Data input 1
     input wire [N-1:0] D2,  // Data input 2
     input wire [N-1:0] D3,  // Data input 3
     input wire [N-1:0] D4,  // Data input 4
     input wire [N-1:0] D5,  // Data input 5
-    input wire [2:0]  Sel, // Select input (2-bit)
+    input wire [N-1:0] D6,  // Data input 6
+    input wire [2:0]  Sel, // Select input (3-bit)
     output wire [N-1:0] Y   // Output
 );
 
@@ -18,6 +19,7 @@ module mux6to1 #(parameter N = 32) (
             3'b011: Y_wire = D3;  // Select input 3 when Sel is 011
             3'b100: Y_wire = D4;  // Select input 4 when Sel is 100
             3'b101: Y_wire = D5;  // Select input 5 when Sel is 101
+            3'b110: Y_wire = D6;  // Select input 6 when Sel is 110
         endcase
     end
 

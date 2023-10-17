@@ -17,6 +17,7 @@ module ALUControl_Block( ALUControl, ALUOp, funct);
 		8'b10101010: ALUControl=3'b011; //less than for R-type slt
 		8'b10000000: ALUControl=3'b100; //shift left for R-type sll
 		8'b10000010: ALUControl=3'b101; //shift right for R-type srl
+		8'b10100011: ALUControl=3'b110; //mult for R-type mult
 		default: ALUControl=3'b000;
 	endcase
 endmodule

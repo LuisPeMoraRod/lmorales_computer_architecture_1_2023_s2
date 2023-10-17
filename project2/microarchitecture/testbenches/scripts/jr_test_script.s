@@ -1,9 +1,10 @@
-    xori $a0, $zero, 0x10
+    xori $a0, $zero, 0x4
     xori $a1, $zero, 0x4
-    bne $a0, $a1, resta //bne opcode is used for bgt our architecture
+    xori $s0, $zero, 0xd
+    jr $s0
 suma:
 	add $s0, $a0, $a1
-    xori $s1, $zero, 0xf
+    xori $a0, $zero, 0xf
     xori $s1, $zero, 0xf
     xori $s1, $zero, 0xf
     xori $s1, $zero, 0xf

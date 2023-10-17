@@ -101,7 +101,7 @@ casex (Opcode)
      BranchSrc = 1'b0;
      ALUOp = 2'b11;
      Jump = 1'b0;
-     SignZero= 1'b1; // zero extend
+     SignZero= 1'b0; // zero extend
     end
  6'b000010 : begin // j - Jump
      RegDst = 1'b0;
