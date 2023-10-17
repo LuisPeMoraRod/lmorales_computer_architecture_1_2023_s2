@@ -1,5 +1,5 @@
 `timescale 1 ps / 100 fs
-module alu (
+module alu #(parameter N=24) (
 	Output, CarryOut, zero, gt, overflow, negative, BussA, BussB, ALUControl
 );
     input [31:0] BussA;        // Input A (32-bit)
@@ -18,10 +18,10 @@ module alu (
 	assign shamt = BussB[10:6];
 
 	//add
-	adder_32bits adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
+	adder #(N) adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
 	
 	//sub
-	adder_32bits subtractor(.A(BussA), .B(BussB), .Cin(1), .R(sub), .C(C_sub), .N(N_sub), .V(V_sub), .Z(Z_sub));
+	adder #(N) subtractor(.A(BussA), .B(BussB), .Cin(1), .R(sub), .C(C_sub), .N(N_sub), .V(V_sub), .Z(Z_sub));
 	assign gt_sub = ~N_sub & ~V_sub & ~Z_sub;
 
 	//xori
