@@ -98,7 +98,7 @@ module ram (
 		altsyncram_component.power_up_uninitialized = "FALSE",
 		altsyncram_component.read_during_write_mode_port_a = "DONT_CARE",
 		altsyncram_component.widthad_a = 6,
-		altsyncram_component.width_a = 32,
+		altsyncram_component.width_a = 16,
 		altsyncram_component.width_byteena_a = 1;
 
 
