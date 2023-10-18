@@ -5,6 +5,7 @@ module dataMem(data, address, writedata, writeenable,MemRead,clk);
 input [23:0] address, writedata;
 input writeenable,MemRead, clk;
 output [23:0] data;
+
 logic [5:0] address_ram;
 assign address_ram = address[5:0]; //adjust to address size
 

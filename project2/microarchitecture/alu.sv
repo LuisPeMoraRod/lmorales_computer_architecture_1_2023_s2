@@ -18,10 +18,10 @@ module alu #(parameter N=24) (
 	assign shamt = BussB[8:4];
 
 	//add
-	adder #(N) adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
+	adder #(N) adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .Neg(N_add), .V(V_add), .Z(Z_add));
 	
 	//sub
-	adder #(N) subtractor(.A(BussA), .B(BussB), .Cin(1), .R(sub), .C(C_sub), .N(N_sub), .V(V_sub), .Z(Z_sub));
+	adder #(N) subtractor(.A(BussA), .B(BussB), .Cin(1), .R(sub), .C(C_sub), .Neg(N_sub), .V(V_sub), .Z(Z_sub));
 	assign gt_sub = ~N_sub & ~V_sub & ~Z_sub;
 
 	//xori

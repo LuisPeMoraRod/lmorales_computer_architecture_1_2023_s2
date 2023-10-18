@@ -4,7 +4,7 @@ module adder #(parameter N=24)
 	  input logic Cin,
 	  output logic [N-1:0] R,
 	  output C,
-	  output N,
+	  output Neg,
 	  output V,
 	  output Z);
 	  
@@ -22,7 +22,7 @@ module adder #(parameter N=24)
 	endgenerate
 	
 	assign C = cins[N];
-	assign N = R[N-1];
+	assign Neg = R[N-1];
 	assign Z = (R == 24'h000000) ? 1 : 0;
 	assign V = (~Cin && (A[N-1] == B[N-1]) && (R[N-1] != A[N-1])) || (Cin && (A[N-1] != B[N-1]) && (R[N-1] != A[N-1])); 
 

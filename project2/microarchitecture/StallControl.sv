@@ -60,7 +60,8 @@ module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,I
 	and #(50) and2(xoroprt,xorop,notOrRtRt);
 	or #(50) OrEXIDRsRt(OrOut,notOrRsRt,xoroprt);
 	and #(50) AndCondition(Condition,EX_MemRead,OrOut);
-	// Condition =1 when stall is satisfied
+	
+	// Condition = 1 when stall is satisfied
 	not #(50) NotPC_WriteEn(PC_WriteEn,Condition);
 	not #(50) NotIFID_WriteEn(IFID_WriteEn,Condition);
 	buf #(50) bufStallflush(Stall_flush,Condition);

@@ -125,9 +125,9 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 
 		register IDEX_Im13_Ext(EX_Im13_Ext,Im13_Ext,1'b1,reset,clk);
 		register IDEX_rs_rt_rd(EX_Instruction[23:0],ID_Instruction,1'b1,reset,clk);
-		assign EX_rs = EX_Instruction[25:21];
-		assign EX_rt = EX_Instruction[20:16];
-		assign EX_rd = EX_Instruction[15:11];
+		assign EX_rs = EX_Instruction[20:17];
+		assign EX_rt = EX_Instruction[16:13];
+		assign EX_rd = EX_Instruction[12:9];
 		// 9 control signals via ID/EX
 		RegBit  IDEX_RegDst(EX_RegDst, ID_RegDst, 1'b1,reset, clk);
 		RegBit  IDEX_ALUSrc(EX_ALUSrc, ID_ALUSrc, 1'b1,reset, clk);
@@ -142,20 +142,20 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		RegBit  IDEX_ALUOp0(EX_ALUOp[0], ID_ALUOp[0], 1'b1,reset, clk);
 		//  Forwarding unit
 		ForwardingUnit Forwarding_Block(ForwardA,ForwardB,MEM_RegWrite,WB_RegWrite,MEM_WriteRegister,WB_WriteRegister,EX_rs,EX_rt);
-		// mux 3 x32 to 32 to choose source of ALU (forwarding)
-		mux3x32to32  mux3A(Bus_A_ALU,EX_ReadData1,MEM_ALUResult,WB_WriteData,ForwardA);
-		mux3x32to32  mux3B(Bus_B_forwarded,EX_ReadData2,MEM_ALUResult,WB_WriteData,ForwardB);
-		// mux 2x32 to 32 to select source Bus B of ALU
+		// mux 3x24 to 1 to choose source of ALU (forwarding)
+		mux3to1 #(24)  mux3A(Bus_A_ALU,EX_ReadData1,MEM_ALUResult,WB_WriteData,ForwardA);
+		mux3to1 #(24)  mux3B(Bus_B_forwarded,EX_ReadData2,MEM_ALUResult,WB_WriteData,ForwardB);
+		// mux 2x24 to 1 to select source Bus B of ALU
 		mux2to1 #(24) muxALUSrc( Bus_B_ALU,Bus_B_forwarded,EX_Im13_Ext, EX_ALUSrc);
 		// ALU Control
-		ALUControl_Block ALUControl_Block1( ALUControl, EX_ALUOp, EX_Im13_Ext[5:0]);
-		// EX_Im13_Ext[5:0] is funct
+		ALUControl_Block ALUControl_Block1( ALUControl, EX_ALUOp, EX_Im13_Ext[3:0]);
+		// EX_Im13_Ext[3:0] is funct
 
 		// ALU
 		alu alu_block(EX_ALUResult, CarryFlag, ZeroFlag, gtFlag, OverflowFlag, NegativeFlag, Bus_A_ALU, Bus_B_ALU, ALUControl);
 
-		// mux 2x5 to 5 choose shift register is Rd or Rt
-		mux2x5to5 muxRegDst( EX_WriteRegister,EX_rt,EX_rd, EX_RegDst);
+		// mux 2x4 to 1 choose shift register is Rd or Rt
+		mux2to1 #(4) muxRegDst( EX_WriteRegister,EX_rt,EX_rd, EX_RegDst);
 
 		//==============MEM STAGE=================
 		// register EX/MEM
@@ -165,7 +165,6 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		RegBit  EXMEM_RegWrite(MEM_RegWrite, EX_RegWrite, 1'b1,reset, clk);
 		RegBit  EXMEM_MemRead(MEM_MemRead, EX_MemRead, 1'b1,reset, clk);
 		RegBit  EXMEM_MemWrite(MEM_MemWrite, EX_MemWrite, 1'b1,reset, clk);
-		RegBit  EXMEM_WriteRegister4(MEM_WriteRegister[4], EX_WriteRegister[4], 1'b1,reset, clk);
 		RegBit  EXMEM_WriteRegister3(MEM_WriteRegister[3], EX_WriteRegister[3], 1'b1,reset, clk);
 		RegBit  EXMEM_WriteRegister2(MEM_WriteRegister[2], EX_WriteRegister[2], 1'b1,reset, clk);
 		RegBit  EXMEM_WriteRegister1(MEM_WriteRegister[1], EX_WriteRegister[1], 1'b1,reset, clk);
@@ -182,7 +181,6 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		// register MEM/WB
 		register MEMWB_ReadDataOfMem(WB_ReadDataOfMem,MEM_ReadDataOfMem,1'b1,reset,clk);
 		register MEMWB_ALUResult(WB_ALUResult,MEM_ALUResult,1'b1,reset,clk);
-		RegBit  MEMWB_WriteRegister4(WB_WriteRegister[4], MEM_WriteRegister[4], 1'b1,reset, clk);
 		RegBit  MEMWB_WriteRegister3(WB_WriteRegister[3], MEM_WriteRegister[3], 1'b1,reset, clk);
 		RegBit  MEMWB_WriteRegister2(WB_WriteRegister[2], MEM_WriteRegister[2], 1'b1,reset, clk);
 		RegBit  MEMWB_WriteRegister1(WB_WriteRegister[1], MEM_WriteRegister[1], 1'b1,reset, clk);
@@ -197,16 +195,16 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		//Stalling
 		StallControl StallControl_block(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,rs,rt,Opcode);
 
-		//Jump,beq, JRs
-		 // beq: Branch on equal
+		//j, beq, bgt , jr
 		
+		// beq and bgt
 		Add Add_beq(PCbne,EX_PCp1,EX_Im13_Ext); // use same immediate instead of imm * 4
 		assign BFlag = (EX_BranchSrc) ? gtFlag : ZeroFlag;
 		and #(50) andbranchControl(branchControl,EX_Branch, BFlag);
 		mux2to1 #(24)  muxbranchControl( PCp1bne,PCp1, PCbne, branchControl);
 		
 		// jump
-		assign PCj = {ID_PCp1[31:28],{2'b0,ID_Instruction[25:0]}}; //assign PC the new address where to jump
+		assign PCj = {ID_PCp1[23:21],ID_Instruction[20:0]}; //assign PC the new address where to jump
 
 		not #(50) notIFIDFlush(notIFID_flush,IFID_flush);
 		and #(50) andJumpFlush(JumpFlush,Jump,notIFID_flush);
