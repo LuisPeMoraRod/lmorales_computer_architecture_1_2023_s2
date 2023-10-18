@@ -2,8 +2,8 @@
 module ASIP_tb();
 
 reg clk, reset;
-logic [31:0] PC, instruction, WBRegData;
-logic [5:0] WBReg;
+logic [23:0] PC, instruction, WBRegData;
+logic [3:0] WBReg;
 logic beqControl;
 
 ASIP dut(clk, reset, PC, instruction, WBRegData, WBReg, beqControl);
