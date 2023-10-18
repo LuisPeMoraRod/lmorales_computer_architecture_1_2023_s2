@@ -2,20 +2,20 @@
 module alu #(parameter N=24) (
 	Output, CarryOut, zero, gt, overflow, negative, BussA, BussB, ALUControl
 );
-    input [31:0] BussA;        // Input A (32-bit)
-    input [31:0] BussB;        // Input B (32-bit)
+    input [N-1:0] BussA;        // Input A (24-bit)
+    input [N-1:0] BussB;        // Input B (24-bit)
     input [2:0] ALUControl; // ALU Control (3-bit)
-    output [31:0] Output;  // ALU Result (32-bit)
+    output [N-1:0] Output;  // ALU Result (24-bit)
     output CarryOut;           // Carry Out
     output zero;           // Zero Flag
     output gt;           // Greater than Flag
     output overflow;       // Overflow Flag
     output negative;        // Negative Flag
 
-	logic [31:0] add, sub, slt, xori, sll, srl, mult;
+	logic [N-1:0] add, sub, slt, xori, sll, srl, mult;
 	logic C_add, C_sub, C_mult, Z_add, Z_sub, Z_mult, V_add, V_sub, V_mult, N_add, N_sub, N_mult, gt_sub;
-	logic [5:0] shamt;
-	assign shamt = BussB[10:6];
+	logic [4:0] shamt;
+	assign shamt = BussB[8:4];
 
 	//add
 	adder #(N) adder(.A(BussA), .B(BussB), .Cin(0), .R(add), .C(C_add), .N(N_add), .V(V_add), .Z(Z_add));
@@ -28,7 +28,7 @@ module alu #(parameter N=24) (
 	assign xori = BussA ^ BussB;
 	
 	//set less than
-	assign slt = (BussA < BussB) ? 32'b1 : 32'b0;
+	assign slt = (BussA < BussB) ? 24'b1 : 24'b0;
 	
 	//shift left logical
 	assign sll = BussA << shamt;
@@ -37,9 +37,9 @@ module alu #(parameter N=24) (
 	assign srl = BussA >> shamt;
 
 	//multiplication
-	multiplicator #(32) multi(BussA, BussB, mult, Z_mult, C_mult, V_mult, N_mult);
+	multiplicator #(N) multi(BussA, BussB, mult, Z_mult, C_mult, V_mult, N_mult);
 
-	mux7to1 #(32) mux_result(add, xori, sub, slt, sll, srl, mult, ALUControl, Output);
+	mux7to1 #(N) mux_result(add, xori, sub, slt, sll, srl, mult, ALUControl, Output);
 	mux7to1 #(1) mux_C(C_add, 0, C_sub, 0, 0, 0, C_mult, ALUControl, CarryOut);
 	mux7to1 #(1) mux_Z(Z_add, 0, Z_sub, 0, 0, 0, Z_mult, ALUControl, zero);
 	mux7to1 #(1) mux_V(V_add, 0, V_sub, 0, 0, 0, V_mult, ALUControl, overflow);
