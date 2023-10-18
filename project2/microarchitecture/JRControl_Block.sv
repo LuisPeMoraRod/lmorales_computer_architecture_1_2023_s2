@@ -5,11 +5,11 @@ module JRControl_Block( JRControl, ALUOp, Funct);
 	reg JRControl;
 	input [1:0] ALUOp;
 	input [3:0] Funct;
-	wire [7:0] jr_funct;
+	wire [5:0] jr_funct;
 	assign jr_funct = {ALUOp,Funct};
 	always @(jr_funct)
 	case (jr_funct)
-		8'b100110 : JRControl=1'b1; 
+		6'b100110 : JRControl=1'b1; 
 		default: JRControl=1'b0;
 	endcase
 endmodule
