@@ -1,4 +1,4 @@
-module mux7to1 #(parameter N = 32) (
+module mux7to1 #(parameter N = 24) (
     input wire [N-1:0] D0,  // Data input 0
     input wire [N-1:0] D1,  // Data input 1
     input wire [N-1:0] D2,  // Data input 2
