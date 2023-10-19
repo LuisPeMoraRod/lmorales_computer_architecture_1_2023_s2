@@ -1,2 +1,2 @@
-xori $t1, $zero, 0x3
-xori $t2, $zero, 0x8
+xori $b1, $zero, 0x3
+xori $b2, $zero, 0x8

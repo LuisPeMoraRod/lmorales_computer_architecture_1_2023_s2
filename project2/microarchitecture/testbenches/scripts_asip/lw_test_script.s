@@ -1,5 +1,5 @@
-xori $t0, $zero, 0x5
-lw $t1, 0($t0)
-xori $t2, $zero, 0x1
-sub $t0, $t0, $t2
-lw $t1, 0($t0)
+xori $b0, $zero, 0x5
+cargue $b1, $b0
+xori $b2, $zero, 0x1
+reste $b0, $b0, $b2
+cargue $b1, $b0
