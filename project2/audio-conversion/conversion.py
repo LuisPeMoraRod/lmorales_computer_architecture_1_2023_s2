@@ -1,16 +1,18 @@
 # Abre el archivo MP3 en modo binario
-with open('audioTest.mp3', 'rb') as mp3_file:
+with open('badtrip_mora.mp3', 'rb') as mp3_file:
     # Lee los datos binarios del archivo
     mp3_data = mp3_file.read()
 
-# Abre un archivo de texto en el que escribirás los valores hexadecimales
+# Abre un archivo de texto en el que escribirás los valores hexadecimales sin el prefijo "0x" y con dos dígitos
 with open('mp3_hex.txt', 'w') as hex_file:
     # Convierte cada byte en el archivo MP3 a un valor hexadecimal y escribe en el archivo de texto
     for byte in mp3_data:
-        hex_value = hex(byte)
+        hex_value = hex(byte)[2:]  # Elimina el prefijo "0x"
+        # Añade ceros a la izquierda para que el valor tenga dos dígitos
+        hex_value = hex_value.zfill(2)
         hex_file.write(hex_value + '\n')
 
-# Abre un archivo de texto en el que escribirás los valores decimales
+# Abre un archivo de texto en el que escribirás los valores decimales con solo dos dígitos decimales
 with open('mp3_decimal.txt', 'w') as decimal_file:
     # Convierte cada valor hexadecimal a decimal y escribe en el archivo de texto
     with open('mp3_hex.txt', 'r') as hex_file:
@@ -23,46 +25,15 @@ with open('mp3_decimal.txt', 'w') as decimal_file:
             else:
             	valor = div-1
             	decimal_file.write(str(valor) + '\n')
-            	
-# Abre un archivo de texto en el que escribirás los valores en formato Q7.8 con bit de signo
-with open('mp3_q7.8.txt', 'w') as q7_8_signed_file:
-    # Abre el archivo de valores decimales ajustados
-    with open('mp3_decimal.txt', 'r') as decimal_adjusted_file:
-        for line in decimal_adjusted_file:
-            decimal_value = float(line.strip())
-            
-            # Determina el bit de signo
-            if decimal_value < 0:
-                sign_bit = 1
-                # Convierte el valor decimal negativo a su valor absoluto
-                decimal_value = abs(decimal_value)
-            else:
-                sign_bit = 0
-            
-            # Convierte el valor decimal a Q7.8
-            if decimal_value > 1.0:
-                decimal_value = 1.0
-            
-            int_part = int(decimal_value * 128)
-            frac_part = int((decimal_value * 128 - int_part) * 256)
-            
-            q7_8_value = (sign_bit << 15) | (int_part << 8) | frac_part
-            
-            q7_8_signed_file.write(format(q7_8_value, '016b') + '\n')
-            
-# Abre un archivo de texto en el que escribirás los valores en formato hexadecimal sin "0x"
-with open('final.txt', 'w') as hex_clean_file:
-    # Abre el archivo de valores en formato Q7.8 con bit de signo
-    with open('mp3_q7.8.txt', 'r') as q7_8_signed_file:
-        for line in q7_8_signed_file:
-            q7_8_value = int(line.strip(), 2)  # Convierte el valor binario a entero
-            
-            # Convierte el valor a formato hexadecimal y quita el "0x"
-            hex_value = hex(q7_8_value)[2:]
-            
-            # Asegúrate de que el valor tenga una longitud de 4 caracteres (incluyendo ceros a la izquierda si es necesario)
-            hex_value = hex_value.zfill(4)
-            
-            # Escribe el valor en formato hexadecimal sin "0x" en el archivo de texto
-            hex_clean_file.write(hex_value + '\n')
+
+
+# Abre un archivo de texto en el que escribirás los valores binarios en formato Q7.8
+with open('mp3_q7.8.txt', 'w') as binary_file:
+    # Convierte cada valor decimal a binario en formato Q7.8 y escribe en el archivo de texto
+    with open('mp3_decimal.txt', 'r') as decimal_file:
+        for line in decimal_file:
+            decimal_value = float(line)
+            # Convierte el valor decimal a binario en formato Q7.8
+            binary_value = bin(int(decimal_value * (2 ** 8)) & 0xFFFF)  # Multiplica por 2^8 y convierte a binario
+            binary_file.write(binary_value[2:].zfill(16) + '\n')  # Añade ceros a la izquierda para tener 16 bits
 
