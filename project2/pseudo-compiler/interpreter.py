@@ -50,9 +50,10 @@ def clean_instructions(file) -> list:
     """
     instructions = []
     for line in file:
+        line = line.split('#')[0] #remove comments
         line = line.strip()
         if line:
-            line = re.split(r'[,\s]+', line)
+            line = re.split(r'[,\s]+', line) #remove white space or ','
             instructions.append(line)
     return instructions
 

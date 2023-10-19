@@ -1,6 +1,7 @@
+#comment
 suma:
-    guarde $b0, $b1
-    cargue $b2, $b1
+    cargue $b2, $b3
+    guarde $b0, $b1 #comment
     salte resta
     salte_myq $b0, $b1, resta
     xori $b0, $zero, -1
