@@ -91,6 +91,9 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name EDA_TEST_BENCH_NAME ASIP_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id ASIP_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME ASIP_tb -section_id ASIP_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/ASIP_tb.sv -section_id ASIP_tb
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/sw_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/xori_test_instructions.txt
 set_global_assignment -name SYSTEMVERILOG_FILE mux3to1.sv
 set_global_assignment -name SYSTEMVERILOG_FILE testbenches/ASIP_tb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ASIP.sv
@@ -126,7 +129,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE full_adder.sv
 set_global_assignment -name SYSTEMVERILOG_FILE testbenches/Add_tb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE testbenches/sign_extend_tb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE testbenches/InstructionMem_tb.sv
-set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name SYSTEMVERILOG_FILE testbenches/dataMem_tb.sv
 set_global_assignment -name TEXT_FILE testbenches/slt_test_instructions.txt
 set_global_assignment -name TEXT_FILE testbenches/bne_test_instructions.txt
@@ -142,19 +144,8 @@ set_global_assignment -name TEXT_FILE testbenches/bgt_test_instructions.txt
 set_global_assignment -name TEXT_FILE testbenches/scripts/jr_test_instructions.txt
 set_global_assignment -name SYSTEMVERILOG_FILE multiplicator.sv
 set_global_assignment -name TEXT_FILE testbenches/scripts/mult_test_instructions.txt
-set_global_assignment -name SYSTEMVERILOG_FILE testbenches/reverb_operations_tb.sv
-set_global_assignment -name EDA_TEST_BENCH_NAME reverb_operations_tb -section_id eda_simulation
-set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id reverb_operations_tb
-set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME reverb_operations_tb -section_id reverb_operations_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE mips_16_tb.sv -section_id mips_16_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/register_tb.sv -section_id register_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/D_FF_tb.sv -section_id D_FF_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/alu_tb.sv -section_id alu_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/Add_tb.sv -section_id Add_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/sign_extend_tb.sv -section_id sign_extend_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/InstructionMem_tb.sv -section_id InstructionMem_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/dataMem_tb.sv -section_id dataMem_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/clock_divider_tb.sv -section_id clock_divider_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/ASIP_tb.sv -section_id ASIP_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/reverb_operations_tb.sv -section_id reverb_operations_tb
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/add_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/sub_test_instructions.txt
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/lw_test_instructions.txt
+set_global_assignment -name QIP_FILE ram.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
