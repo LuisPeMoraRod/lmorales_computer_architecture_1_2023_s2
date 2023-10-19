@@ -23,8 +23,7 @@ def get_args(argv: list) -> tuple:
         elif opt in ("-i", "--ifile"):
             input_file = arg
         elif opt in ("-o", "--ofile"):
-            output_file = arg.split('.', maxsplit=2)
-            output_file = output_file[0]
+            output_file = arg
     return input_file, output_file
 
 def get_instructions(input_file_name : str) -> tuple:
@@ -39,6 +38,11 @@ def get_instructions(input_file_name : str) -> tuple:
 
     except Exception as e:
         print(e)
+
+def write_binary(instructions: list, output_file: str):
+    with open(output_file, 'w') as f:
+        for instr in instructions:
+            f.write(f"{instr}\n")
 
 def clean_instructions(file) -> list:
     """
@@ -220,6 +224,7 @@ if __name__ == "__main__":
             raise Exception("Missing argument(s).\nCorrect command format is:\n\tpython interpreter.py -i <inputfile> -o <outputfile>")
         else:
             instr, labels = get_instructions(input_file)
-            print(get_binary(instr, labels))
+            bin_intr = get_binary(instr, labels)
+            write_binary(bin_intr, output_file)
     except Exception as e:
         print(e)
