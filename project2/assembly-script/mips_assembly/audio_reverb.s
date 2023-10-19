@@ -57,7 +57,6 @@ _start:
 set_data:
 
 	# Se guarda el valor de la posicion del primer dato de audio
-	# en el registro del otro audio que no se está utilizando
 	add $t0, $s0, $zero
 
 	# ------------------------------------------------------------------------

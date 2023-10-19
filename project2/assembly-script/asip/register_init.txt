@@ -1,0 +1,7 @@
+$zero   = 0x00000;
+$a0     = 0x01000;
+$a1     = 0x1CAC5;
+$sp     = 0x3FFFF;
+$cbh    = 0x3858C;
+$cbt    = 0x3EFFF;
+$b0-$b9 = 0x00000;

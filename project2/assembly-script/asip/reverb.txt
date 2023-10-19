@@ -1,0 +1,32 @@
+# Instituto Tecnologico de Costa Rica
+# Área Académica de Ingeniería en Computadores
+# Arquitectura de Computadores I
+# Proyecto Grupal 1
+# Script en ensamblador con ISA propio
+# Reverberacion de una señal de audio
+
+set_data:
+	
+	# Se guarda el valor de la posicion del primer dato de audio
+	add $t0, $a0, $zero
+
+	# ------------------------------------------------------------------------
+	
+	# Para obtener el valor de la cantidad de datos por audio
+	xori $b9, $zero, 0x00000
+    cargue $b8,  
+
+
+    shift_i $t9, $t9, 16        # 010000
+    xori $t8, $zero, 0x00001
+    add
+
+
+
+	la $t9, n		# Address de donde esta n (cantidad de datos)
+	# keep
+	lw $t1, ($t9)	# Guarda la cantidad de datos del audio en reg $t1
+	
+	# VIENE EN DOS POSICIONES DE MEMORIA AL SER MAYOR DE 4 HEX 
+	
+	# ------------------------------------------------------------------------
