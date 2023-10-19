@@ -44,8 +44,6 @@ _start:
 	# $s6 será el $sp que empezaría en 0x40000
 	li $s6, 1024  # Empieza en 0x400
 	
-	
-	
 	# test number 1
 	# xori $t6, $zero, 8
 	# xori $t7, $zero, 192
@@ -135,6 +133,11 @@ set_data:
 	
 	# ------------------------------------------------------------------------
 	
+	# Guardar el valor inical del buffer en el registro del otro audio
+	# $a1 en script real ($s1 en MIPS)
+	# add $s1, $s3, $zero
+	# ESTO SE PODRIA ACOMODAR EN UN REGISTRO DE PROPOSITO GENERAL
+	# PERO HAY QUE REVISAR EN REVERB SI SE USA DE MANERA TEMPORAL
 
 reverb:
 
@@ -157,7 +160,7 @@ reverb:
 	# $t3 -> k (valor entero, sin parte fraccionaria)
 	# $t4 -> alpha
 	# $t5 -> (1 - alpha)
-	# $t6 -> ulyima direccion donde se guardara en el buffer
+	# $t6 -> ultima direccion donde se guardara en el buffer
 	
 	# $s6 será $sp en el script real
 	
@@ -316,36 +319,263 @@ reverb:
 	
 	# ------------------------------------------------------------------------
 	
-	# Comp si ya se puede sumar el valor anterior de y(n)
-	# si k > n
+	# Verificación para ver si se puede sumar alpha * y(n - k) al resultado
 	
-	# $s0, la posicion actual del audio, se le resta $t0, que posee la posicion
-	# inicial del audio. Esto da la cantidad de datos que se han computado hasta 
-	# este ciclo ($t7) es temp
-	sub $t7, $s0, $t0	
+	# si (k + direccion del primer dato de audio) < (dirección del audio actual)
+	# si ($t3 + $t0) < ($a0)
+	# se puede sumar alpha * y(n - k)
 	
-	# Mientras k sea mayor a este valor no se puede hace la parte de
-	# + alpha * y(n - k) de la función para obtener y(n)
+	# $t8 = $t3 + $t0
+	add $t8, $t3, $t0
 	
-	# Si k es mayor pasa a guardar el valor en el buffer circular
-	bgt $t3, $t6, save_yn
+	# Si la direccion del dato actual es mayor, se puede sumar alpha * y(n - k)
+	# Si no, se pasa directo a guardar el resultado
+	bgt $t8, $a0, save_yn
 	
+	# Entonces, como ya hay suficientes datos para obtener y(n - k)
+	# Se puede proceder a calcular su direccion en el buffer circular
+	# y(n - k) se encuentra en la posicion siguiente al head actual donde
+	# se guardará el valor de y(n): $t8 = $cbh + 1, si $cbh != $t6
+		
+	# Para subir el circular buffer head ($cbh) $s3 se le suma 1 espacio de memoria completo
+	# Para MIPS se le sumarán 4 pero para el real será solo 1, es temp
+	xori $t9, $zero, 4 # Se deja un registro con el valor de 1
 	
-	# Si no, se busca y(n - k)
+	# Se debe verificar que $cbh no esté en la ultima posicion del buffer circualr
+	# Si no $cbh + 1 será $cbh - k ($t3)
+	beq $s3, $t6, get_first
 	
+	# Posición por la cual obtener y(n - k) en el buffer circular
+	# $t8 = $cbh + "1", es temp
+	add $t8, $s6, $t9
 	
-	# FALTA
+	# Lógica para la suma de alpha * y(n - k)
+	j sum_ynk
 	
+get_first:
+
+	# Como $cbh se encuentra en la última posición del buffer
+	# y(n - k) se encuentra en el primer espacio del buffer
 	
+	# $t8 = $cbh - $t3 (k)
+	sub $t8, $s6, $t3
+
+	# Lógica para la suma de alpha * y(n - k)
+	j sum_ynk
 	
+sum_ynk:
+
+	# El resultado parcial de y(n) está en $t7, que quedará en el stack mientras se multiplica
+	# La direccion de memoria con y(n - k) está en $t8
+	
+	# Se ingresa alpha en el registro fraccionario del segundo operando
+	add $t9, $t4, $zero
+	
+	# Se trae y(n - k) en el registro $t8 temporal 
+	# Se debe acomodar luego como operando en los registros correspondientes
+	lw $t8, ($t8)
+	
+	# GUARDAR VALORES EN REGISTROS EN STACK PARA SER UTILIZADOS
+	# EN LA SUBRUTINA DE MULTIPLICACION
+	# $t0 -> dirección del primer dato de audio
+	# $t1 -> cantidad de datos por audio
+	# $t2 -> dirección del último dato de audio
+	# $t3 -> k (valor entero, sin parte fraccionaria)
+	# $t4 -> alpha
+	# $t5 -> (1 - alpha)
+	# $t6 -> ultima direccion donde se guardara en el buffer
+	# $t7 -> resultado parcial de y(n)
+	
+	# $s6 será $sp en el script real
+	
+	# Para bajar el stack pointer se le resta 1 espacio de memoria completo
+	# Para MIPS se le restarán 4 pero para el real será solo 1, es temp
+	# Se usa $s1 porque no hay mas registros ya
+	xori $s1, $zero, 4 # Se deja un registro con el valor de 1
+	
+	# Primero se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t0
+	sw $t0, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t1
+	sw $t1, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t2
+	sw $t2, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t3
+	sw $t3, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t4
+	sw $t4, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t5
+	sw $t5, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t6
+	sw $t6, ($s6)
+	
+	# Se baja el stack pointer
+	sub $s6, $s6, $s1
+	# Se guarda $t7
+	sw $t7, ($s6)
+	
+	# Todos los datos se encuentran en el stack, se puede proceder con la multiplicacion
+	
+	# ------------------------------------------------------------------------
+	
+	# alpha completo está en $t9
+	# y(n - k) completo está en $t8
+	
+	# Preparar valores para la multiplicacion
+
+	# Se ingresa alpha en los registros del primer operando
+	add $t6, $t9, $zero
+	add $t7, $t9, $zero
+	
+	# Se acomodará ahora para dejarlo bien en los dos registros
+	
+	# Para dejar solo la parte entera ($t6 >> 8)
+	srl $t6, $t6, 8 	# shift right logical
+	
+	# Para dejar solo la parte fraccionaria ($t7 << 16)
+	# Para este ejemplo en MIPS ($t7 << 24)
+	sll $t7, $t7, 24 	# shift left logical
+	# Se acomoda en los primeros valores para poder se utilizado ($t7 >> 16)
+	# Para este ejemplo en MIPS ($t7 >> 24)
+	srl $t7, $t7, 24 	# shift right logical
+	
+	# ------------------------------------------------------------------------
+
+	# Se ingresa y(n - k) en los registros del segundo operando
+	# ya está en $t8
+	add $t9, $t8, $zero
+	
+	# Se acomodará ahora para dejarlo bien en los dos registros
+	
+	# Para dejar solo la parte entera ($t8 >> 8)
+	srl $t8, $t8, 8 	# shift right logical
+	
+	# Para dejar solo la parte fraccionaria ($t9 << 16)
+	# Para este ejemplo en MIPS ($t9 << 24)
+	sll $t9, $t9, 24 	# shift left logical
+	# Se acomoda en los primeros valores para poder se utilizado ($t9 >> 16)
+	# Para este ejemplo en MIPS ($t9 >> 24)
+	srl $t9, $t9, 24 	# shift right logical
+	
+	# ------------------------------------------------------------------------	
+	
+	# guardar aqui en un registro la posicion de la instruccion luego de la multiplicacion
+	# para poder usar el jr para continuar
+	
+	# Para guardar la posicion de la siguiente instruccion se utilizara
+	# posiblemente el registro del audio que no se está utilizando
+	# Se restablece el registo $a1 ($s1 en ejemplo de MIPS)
+	# Se añade la cantidad de posiciones para la siguiente instruccion
+	# 1 en script real (4 para ejemplo de MIPS)
+	#add $s1, pc, 4
+	
+	# jal en ejemplo MIPS para continuar en la siguiente instruccion
+	# despues de hacer un j a la multiplicacion
+	jal mult	
+	
+	# Resultado de la multiplicacion está en $t2
+	# Aqui se tiene $t2 = alpha * y(n - k)
+	# Se guarda el resultado en el registro $t8 temporalmente para poder
+	# sumarlo con el resultado parcial que se reintegrará al registro $t7
+	# despues de traerlo del stack
+	add $t8, $t2, $zero
+	
+	# ------------------------------------------------------------------------
+	
+	# REESTABLECER VALORES EN REGISTROS EN STACK PARA SER UTILIZADOS
+	# CON LOS VALORES DE REGISTROS NORMALES
+	# $t0 -> dirección del primer dato de audio
+	# $t1 -> cantidad de datos por audio
+	# $t2 -> dirección del último dato de audio
+	# $t3 -> k (valor entero, sin parte fraccionaria)
+	# $t4 -> alpha
+	# $t5 -> (1 - alpha)
+	# $t6 -> ulyima direccion donde se guardara en el buffer
+	# $t7 -> resultado parcial de y(n)
+	
+	# $s6 es $sp en el script real
+	
+	# Para subir el stack pointer se le suma 1 espacio de memoria completo
+	# Para MIPS se le sumarán 4 pero para el real será solo 1, es temp
+	xori $t9, $zero, 4 # Se deja un registro con el valor de 1	
+	
+	# Primero se trae el dato al registro 
+	lw $t7, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t6, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t5, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t4, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t3, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t2, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t1, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Primero se trae el dato al registro 
+	lw $t0, ($s6)
+	# Se sube el stack pointer
+	add $s6, $s6, $t9
+	
+	# Queda vacio el stack
+	
+	# ------------------------------------------------------------------------
+	
+	# El resultado de la reciente multiplicacion está en $t8
+	# Se debe sumar ahora con el resultado parcial que se habia calculado antes ($t7)
+	add $t7, $t7, $t8
+	
+	# Se completa así el calculo de y(n)
+	# Puede proceder a guardarse en el buffer circular
+	
+	# Pasa a guardar el dato de y(n)
 	j save_yn
-	
 	
 	
 save_yn:
 
 	# PROCESO DE GUARDADO DE y(n) EN EL BUFFER CIRCULAR	
-	
 
 	# Circular Buffer Tail: $cbt -> $s2
 	# Circular Buffer Head: $cbh -> $s3

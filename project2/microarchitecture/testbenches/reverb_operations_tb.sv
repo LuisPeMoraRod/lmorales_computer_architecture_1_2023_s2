@@ -147,7 +147,7 @@ module reverb_operations_tb #(parameter N=24) ();
 
         $display("\n7.a. (-0.25) - (-0.375) = -0.625");
 		BussA <= 24'b1111111111000000; // -0.25
-		BussB <= 24'b1111111110100000; // -0.375
+		BussB <= 24'b0000000001100000; // 0.375
         #10;
         $display("A = %b\tB = %b\tOutput = (%b) %b.%b", BussA, BussB, sub[23:16], sub[15:8], sub[7:0],
         "\ncarry=%b\tzero=%b\toverflow=%b\tnegative=%b", C_sub, Z_sub, V_sub, N_sub);
