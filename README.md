@@ -6,6 +6,7 @@ To execute the script:
 1. Create a Python virtual environment inside `project1/src` directory:
 ```
 cd project1/src/ && python3 -m venv venv
+
 ```
 2. Activate virtual environment:
 ```
