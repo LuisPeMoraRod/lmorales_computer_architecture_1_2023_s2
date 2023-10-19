@@ -1,5 +1,5 @@
 # Abre el archivo MP3 en modo binario
-with open('badtrip_mora.mp3', 'rb') as mp3_file:
+with open('audioTest.mp3', 'rb') as mp3_file:
     # Lee los datos binarios del archivo
     mp3_data = mp3_file.read()
 
