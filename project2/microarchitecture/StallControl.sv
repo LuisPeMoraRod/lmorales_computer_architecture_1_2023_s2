@@ -15,15 +15,15 @@ module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,I
 	begin
 	 if ((EX_MemRead==1)&&((EX_rt==ID_rs)||((EX_rt==ID_rt)&&(Opcode!= 6'b001110)&&(Opcode!= 6'b100011)))
 	  begin
-	  PC_WriteEn=1'b0;
-	  IFID_WriteEn=1'b0;
-	  Stall_flush =1'b1;
+		PC_WriteEn=1'b0;
+		IFID_WriteEn=1'b0;
+		Stall_flush =1'b1;
 	  end
-	  else
+	 else
 	  begin
-	  PC_WriteEn=1'b1;
-	  IFID_WriteEn=1'b1;
-	  Stall_flush =1'b0;
+		PC_WriteEn=1'b1;
+		IFID_WriteEn=1'b1;
+		Stall_flush =1'b0;
 	  end
 	end
 	*/
@@ -44,15 +44,15 @@ module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,I
 	not #(50) notgate2(notOrRtRt,OrRtRt);
 	// if EX_rt==ID_rt -> notOrRtRt = 1
 
-	xor #(50) xoropcode2(xoropcodelw[2],ID_Op[2],1'b0);
-	xor #(50) xoropcode1(xoropcodelw[1],ID_Op[1],1'b1);
+	xor #(50) xoropcode2(xoropcodelw[2],ID_Op[2],1'b1);
+	xor #(50) xoropcode1(xoropcodelw[1],ID_Op[1],1'b0);
 	xor #(50) xoropcode0(xoropcodelw[0],ID_Op[0],1'b1);
 	or #(50) oropcode1(ec1,xoropcodelw[2],xoropcodelw[1],xoropcodelw[0]);
 	// if (opcode != opcode[lw]) -> xoropcodelw = 1
 
-	xor #(50) xoropcod2(xoropcodexori[2],ID_Op[2],1'b1);
-	xor #(50) xoropcod1(xoropcodexori[1],ID_Op[1],1'b1);
-	xor #(50) xoropcod0(xoropcodexori[0],ID_Op[0],1'b0);
+	xor #(50) xoropcod2(xoropcodexori[2],ID_Op[2],1'b0);
+	xor #(50) xoropcod1(xoropcodexori[1],ID_Op[1],1'b0);
+	xor #(50) xoropcod0(xoropcodexori[0],ID_Op[0],1'b1);
 	or #(50) oropcode2(ec2,xoropcodexori[2],xoropcodexori[1],xoropcodexori[0]);
 	// if (opcode != opcode[xori]) -> xoropcodexori = 1
 
