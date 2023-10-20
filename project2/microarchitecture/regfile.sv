@@ -15,11 +15,11 @@ module regfile
       always @ (posedge clk or posedge rst) begin  
            if(rst) begin  
                reg_array[0] <= 24'h00000;  // $zero
-               reg_array[1] <= 24'h00100;  // $a0
-               reg_array[2] <= 24'h25F78;  // $a1
-               reg_array[3] <= 24'h50000;  // $sp  
-               reg_array[4] <= 24'h4BDF0;  // $cbh
-               reg_array[5] <= 24'h4FEFF;  // $cbt
+               reg_array[1] <= 24'h00020;  // $a0
+               reg_array[2] <= 24'h1B831;  // $a1
+               reg_array[3] <= 24'h40000;  // $sp  
+               reg_array[4] <= 24'h37042;  // $cbh
+               reg_array[5] <= 24'h391A8;  // $cbt
                reg_array[6] <= 24'h00000;  // $b0
                reg_array[7] <= 24'h00000;  // $b1
                reg_array[8] <= 24'h00000;  // $b2
