@@ -28,7 +28,7 @@ def agregar_reverberacion(audio, k, alpha):
     return audio_modificado
 
 # Cargar el archivo de audio de entrada
-entrada = AudioSegment.from_file("audioTest.mp3")
+entrada = AudioSegment.from_file("audioClean.mp3")
 
 # Definir el retardo y la atenuación
 k = 500  # Ajusta el retardo según tus preferencias

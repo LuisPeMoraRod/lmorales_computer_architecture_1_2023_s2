@@ -37,3 +37,5 @@ with open('mp3_q7.8.txt', 'w') as binary_file:
             binary_value = bin(int(decimal_value * (2 ** 8)) & 0xFFFF)  # Multiplica por 2^8 y convierte a binario
             binary_file.write(binary_value[2:].zfill(16) + '\n')  # Añade ceros a la izquierda para tener 16 bits
 
+            
+
