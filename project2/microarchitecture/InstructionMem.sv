@@ -3,7 +3,7 @@ module InstructionMem #(parameter N=24) (instruction, address);
 
 input [N-1:0] address;
 output [N-1:0] instruction;
-reg [N-1:0]instrmem[1023:0];
+reg [N-1:0]instrmem[255:0];
 reg [N-1:0] temp;
 
 buf #1000 buf0(instruction[0],temp[0]),
@@ -39,9 +39,8 @@ end
 
 initial
 begin
-   // $readmemb("../../instr.txt", instrmem); //path for simulation
-   // $readmemb("../../testbenches/scripts_asip/sw_test_instructions.txt", instrmem); //path for simulation
-   $readmemb("instr.txt", instrmem);
+   $readmemb("../../testbenches/scripts_asip/jr_test_instructions.txt", instrmem); //path for simulation
+   // $readmemb("instr.txt", instrmem);
 end
 
 endmodule
