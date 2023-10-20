@@ -17,14 +17,14 @@ begin
   #20000;
   reset = 0;
   
-  #160000;
+  #440000;
 
   reset = 1;
   sel = 0;
   #20000;
   reset = 0;
   
-  #260000;
+  #440000;
   $finish;
 end
 endmodule

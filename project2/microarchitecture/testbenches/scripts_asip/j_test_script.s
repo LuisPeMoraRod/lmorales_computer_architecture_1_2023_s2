@@ -10,3 +10,5 @@ xori $b2, $zero, 0x1
 
 shift_right:
 shift_d $b0, $b0, 1
+
+fin $zero

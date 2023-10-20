@@ -19,5 +19,7 @@ sum:
     sume $sp, $sp, $b3
 
     salte_r $b2
-end:    
+end:
+    sume $b0, $zero, $zero    
+    sume $b0, $zero, $zero    
     fin $zero
