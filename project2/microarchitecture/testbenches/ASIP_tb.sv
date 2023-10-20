@@ -12,10 +12,17 @@ always #10000 clk = ~clk;
 
 initial 
 begin
-   reset = 1;
+  reset = 1;
   #20000;
   reset = 0;
-  #800000;
+  
+  #300000;
+
+  reset = 1;
+  #20000;
+  reset = 0;
+  
+  #60000;
   $finish;
 end
 endmodule

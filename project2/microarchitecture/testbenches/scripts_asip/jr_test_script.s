@@ -5,11 +5,11 @@ xori $b2, $zero, return_sum
 salte sum
 return_sum:
 
-xori $b0, $zero, 0x0
+salte end
 
 sum:
-    xori $b3, $zero, -1
-    sume $sp, $sp, $b3
+    xori $b3, $zero, 1
+    reste $sp, $sp, $b3
     guarde $b2, $sp
 
     sume $b1, $b0, $b1
@@ -19,3 +19,5 @@ sum:
     sume $sp, $sp, $b3
 
     salte_r $b2
+end:    
+    fin $zero
