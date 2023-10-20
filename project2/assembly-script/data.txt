@@ -1,0 +1,20 @@
+
+WIDTH=16;
+DEPTH=262144;
+
+ADDRESS_RADIX=HEX;
+DATA-REDIX=HEX;
+
+CONTENT BEGIN
+    00000   :   0001; // |
+    00001   :   BAC6; // cantidad de datos de audio
+    00002   :   0000; // 
+    00003   :   0000;
+    00004   :   0000;
+    00005   :   0000;
+    00007   :   0000;
+    00008   :   0000;
+    00009   :   0000;
+    0000A   :   0000;
+    [00000..3FFFF]  :   FFFF;
+END;

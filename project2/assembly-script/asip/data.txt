@@ -1,0 +1,20 @@
+
+WIDTH=16;
+DEPTH=262144;
+
+ADDRESS_RADIX=HEX;
+DATA-REDIX=HEX;
+
+CONTENT BEGIN
+    00000   :   0001; // cantidad de datos de audio = 133350
+    00001   :   BAC6; // "" "" "" "" "" "" "" "" ""
+    00002   :   0099; // alpha = 0.6
+    00003   :   089D; // k = 2205
+    00004   :   000C; // k_sinfs = 12
+    00005   :   AC44; // fs = 44100
+    00006   :   0280; // 1/(1-alpha) = 2.5
+    00007   :   0000;
+    00008   :   0000;
+    00009   :   0000;
+    [00000..3FFFF]  :   FFFF;
+END;
