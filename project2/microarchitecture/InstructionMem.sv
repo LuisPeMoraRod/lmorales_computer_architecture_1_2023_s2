@@ -1,9 +1,11 @@
 `timescale 1 ps / 100 fs
-module InstructionMem #(parameter N=24) (instruction, address);
+module InstructionMem #(parameter N=24) (sel, instruction, address);
 
 input [N-1:0] address;
+input sel;
 output [N-1:0] instruction;
-reg [N-1:0]instrmem[255:0];
+reg [N-1:0]instrmem_a0[255:0]; //reverberation script
+reg [N-1:0]instrmem_a1[255:0]; //dereverberation script
 reg [N-1:0] temp;
 
 buf #1000 buf0(instruction[0],temp[0]),
@@ -34,13 +36,15 @@ buf #1000 buf0(instruction[0],temp[0]),
 always @(address)
 begin
 //  temp=instrmem[address/4];
- temp=instrmem[address];
+ temp = (sel) ? instrmem_a1[address] : instrmem_a0[address];
 end
 
 initial
 begin
-   $readmemb("../../testbenches/scripts_asip/jr_test_instructions.txt", instrmem); //path for simulation
-   // $readmemb("instr.txt", instrmem);
+   $readmemb("../../testbenches/scripts_asip/lw_test_instructions.txt", instrmem_a0); //path for simulation
+   $readmemb("../../testbenches/scripts_asip/j_test_instructions.txt", instrmem_a1); //path for simulation
+   // $readmemb("instr.txt", instrmem_a0);
+   // $readmemb("instr.txt", instrmem_a1);
 end
 
 endmodule

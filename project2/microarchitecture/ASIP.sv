@@ -1,12 +1,12 @@
 `timescale 1 ps / 100 fs
 // Top level Verilog code for 24-bit 5-stage Pipelined ASIP Processor 
-module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, outBneControl);
-		input clk, reset;
+module ASIP(clk, reset, audio_sel, outPC, outInstruction, outWriteData, outWriteRegister, outBranchControl);
+		input clk, reset, audio_sel;
 
 		//output for testbenches
 		output [23:0] outPC, outInstruction, outWriteData;
 		output [5:0] outWriteRegister;
-		output outBneControl;
+		output outBranchControl;
 
 		wire [23:0] PC, PCin;
 		wire [23:0] PCp1,ID_PCp1,EX_PCp1; //PC + 1
@@ -53,7 +53,7 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		register PC_Reg(PC,PCin,PC_WriteEn,reset,clk);
 		Add Add1(PCp1,PC,{23'b0,1'b1}); // PCp1 = PC + 1
 
-		InstructionMem InstructionMem1(Instruction, PC);
+		InstructionMem InstructionMem1(audio_sel, Instruction, PC);
 
 		// register IF/ID
 
@@ -221,6 +221,6 @@ module ASIP(clk, reset, outPC, outInstruction, outWriteData, outWriteRegister, o
 		assign outInstruction = Instruction;
 		assign outWriteRegister = WB_WriteRegister;
 		assign outWriteData = WB_WriteData;
-		assign outBneControl = branchControl;
+		assign outBranchControl = branchControl;
 
 endmodule
