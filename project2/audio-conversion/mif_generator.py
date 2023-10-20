@@ -17,6 +17,6 @@ def generate_mif_file(file_name, data_width, depth):
 if __name__ == "__main__":
     file_name = "ram_example.mif"
     data_width = 8  # Width of each memory location in bits
-    depth = 0x40000  # 3FFFF in hexadecimal
+    depth = 0x50000  # 3FFFF in hexadecimal
 
     generate_mif_file(file_name, data_width, depth)
