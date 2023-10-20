@@ -22,35 +22,53 @@ _start:
 	# Se guardan valores en los espacios de memoria donde iria
 	# el audio 1. Todos estos datos ya estarán en memoria
 	
-	li $t1, 0	# 0000 0000
-	li $t2, 64  # 0100 0000
-	li $t3, 128 # 1000 0000
+	li $t0, 250	# 0000 0000
+	li $t1, 64  # 0100 0000
+	li $t2, 128 # 1000 0000
+	li $t3, 194	# 0000 0000
+	li $t4, 130  # 0100 0000
+	li $t5, 79 # 1000 0000
+	li $t6, 205	# 0000 0000
+	li $t7, 150  # 0100 0000
+	li $t8, 110 # 1000 0000
+	li $t9, 240	# 0000 0000
+	li $s0, 45  # 0100 0000
+	li $s1, 149 # 1000 0000
 	
-	sw $t1, 0($s0)	#1a 0.25
-	sw $t2, 1($s0)  #1b
-	sw $t3, 2($s0)	#1a -0.25
-	sw $t2, 3($s0)  #1b
+	sw $t0, 0($s0)  #1b
+	sw $t1, 4($s0)	#1a 0.25
+	sw $t2, 8($s0)  #1b
+	sw $t3, 12($s0)	#1a -0.25
+	sw $t4, 16($s0)  #1b
+	sw $t5, 20($s0)	#1a 0.25
+	sw $t6, 24($s0)  #1b
+	sw $t7, 28($s0)	#1a -0.25
+	sw $t8, 32($s0)  #1b
+	sw $t9, 36($s0)  #1b
+	sw $s0, 40($s0)	#1a -0.25
+	sw $s1, 44($s0)  #1b
 	
 	# Retorna los resgistros a cero
+	xori $t0, $zero, 0
 	xori $t1, $zero, 0
 	xori $t2, $zero, 0
 	xori $t3, $zero, 0
+	xori $t4, $zero, 0
+	xori $t5, $zero, 0
+	xori $t6, $zero, 0
+	xori $t7, $zero, 0
+	xori $t8, $zero, 0
+	xori $t9, $zero, 0
+	xori $s0, $zero, 0
+	xori $s1, $zero, 0
 	
 	# $s2 es $cbt
-	li $s2, 1007
+	li $s2, 1312 # 520
 	# $s3 es $cbh
-	li $s3, 901
+	li $s3, 1200 # 4B0
 	
-	# $s6 será el $sp que empezaría en 0x40000
-	li $s6, 1024  # Empieza en 0x400
-	
-	# test number 1
-	# xori $t6, $zero, 8
-	# xori $t7, $zero, 192
-	
-	# test number 2
-	# xori $t8, $zero, 4
-	# xori $t9, $zero, 128
+	# $s6 será el $sp que empezaría en 0x580
+	li $s6, 1408  # 580
 	
 	# ------------------------------------------------------------------------
 
@@ -734,15 +752,14 @@ end:
 	
 .data
 
-	audio_0: 	 	.word 4096			# Reg (a0) con el puntero del audio_0 0 x 00 10 00
-	audio_1: 	 	.word 117446		# Reg (a1) con el puntero del audio_1 0 x 01 CA C6
+	audio_0: 	 	.word 1024			# Reg (a0) 0x400
+	audio_1: 	 	.word 1088			# Reg (a1) 0x440
 	alpha:	 	 	.word 153			# alpha 0 x 00 00 99
 	# No, mejor calcular y guardar en variable
-	red_alpha_a: 	.word 2				# Parte entera de la expresión del alpha para reducir
-	red_alpha_b: 	.word 128			# Parte fraccionaria de la expresión del alpha para reducir
-	# -----------------------------------------
-	k_sinfs_a:	 	.word 0				# Parte entera de k_sinfs
-	k_sinfs_b:    	.word 12			# Parte fraccionaria de k_sinfs 0 x 00 00 0C
-	fs:				.word 44100			# Frecuencia de muestreo 0 x 00 AC 44
-	k:				.word 2205			# Retardo tiene que se un numero entero 0 x 00 08 9D
-	n:				.word 113350		# Cantidad de muestras del audio 0 x 01 BA C6
+	# red_alpha_a: 	.word 2				# Parte entera de la expresión del alpha para reducir
+
+	#k_sinfs_a:	 	.word 0				# Parte entera de k_sinfs
+	#k_sinfs_b:    	.word 12			# Parte fraccionaria de k_sinfs 0 x 00 00 0C
+	#fs:			.word 22050			# Frecuencia de muestreo 0 x 00 AC 44
+	k:				.word 4			# Retardo tiene que se un numero entero 0 x 00 08 9D
+	n:				.word 12		# Cantidad de muestras del audio 0 x 01 BA C6

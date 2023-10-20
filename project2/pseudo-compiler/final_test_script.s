@@ -8,14 +8,14 @@
 set_data:
 	
 	# Se guarda el valor de la posicion del primer dato de audio
-	sume $b0, $a0, $zero
+	sume $b0, $a0, $zero # 1
 
 	# ------------------------------------------------------------------------
 	
 	# Para obtener el valor de la cantidad de datos por audio (n)
-	xori $b9, $zero, 0x00000        # Pone en el registro la direcion de la primera parte del dato
-    cargue $b8, $b9                 # Trae la parte mayor -> 0x000001
-    shift_i $b9, $b9, 8             # 0x010000
+	xori $b9, $zero, 0x00000        # Pone en el registro la direcion de la primera parte del dato # 2
+    cargue $b8, $b9                 # Trae la parte mayor -> 0x000001 # 3
+    shift_i $b8, $b8, 16             # 0x010000 # 4
     
     xori $b9, $zero, 0x00001        # Pone en el registro la direccion de la segunda parte del dato
     cargue $b9, $b9                 # Trae la parte mayor -> 0x00BAC6
@@ -565,7 +565,7 @@ next_data:
 mult:
 	# $b3: high = a x c
 	multiplique $b3, $b6, $b8 # Guarda el resultado de high en reg $b3
-	sume
+
 	# $b4: mid = (a x d) + (b x c)
 	# (a x d)
 	multiplique $b4, $b6, $b9
@@ -595,4 +595,6 @@ mult:
 	salte_r $a1
 
 end:
+    sume $b0, $zero, $zero 
+    sume $b0, $zero, $zero
     fin $zero
