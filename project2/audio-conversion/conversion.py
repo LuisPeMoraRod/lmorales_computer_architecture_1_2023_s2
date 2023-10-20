@@ -3,7 +3,7 @@ with open('audioTest.mp3', 'rb') as mp3_file:
     # Lee los datos binarios del archivo
     mp3_data = mp3_file.read()
 
-# Abre un archivo de texto en el que escribirás los valores hexadecimales sin el prefijo "0x" y con dos dígitos
+# Abre un archivo de texto en el que se escriben los valores hexadecimales
 with open('mp3_hex.txt', 'w') as hex_file:
     # Convierte cada byte en el archivo MP3 a un valor hexadecimal y escribe en el archivo de texto
     for byte in mp3_data:
@@ -12,7 +12,7 @@ with open('mp3_hex.txt', 'w') as hex_file:
         hex_value = hex_value.zfill(2)
         hex_file.write(hex_value + '\n')
 
-# Abre un archivo de texto en el que escribirás los valores decimales con solo dos dígitos decimales
+# Abre un archivo de texto para escribir los valores decimales
 with open('mp3_decimal.txt', 'w') as decimal_file:
     # Convierte cada valor hexadecimal a decimal y escribe en el archivo de texto
     with open('mp3_hex.txt', 'r') as hex_file:

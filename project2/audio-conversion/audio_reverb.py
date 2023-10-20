@@ -11,7 +11,6 @@ def agregar_reverberacion(audio, k, alpha):
 
     # Agregar el efecto de reverberación
     for i in range(k, len(audio_array)):
-        #reverb[i] = audio_array[i - k] + alpha * reverb[i - k]
         
         reverb[i]= (audio_array[i]-alpha*audio_array[i-k])/(1 - alpha)
 
@@ -29,7 +28,7 @@ def agregar_reverberacion(audio, k, alpha):
     return audio_modificado
 
 # Cargar el archivo de audio de entrada
-entrada = AudioSegment.from_file("badtrip_mora_7s.wav")
+entrada = AudioSegment.from_file("audioTest.mp3")
 
 # Definir el retardo y la atenuación
 k = 500  # Ajusta el retardo según tus preferencias
@@ -39,4 +38,4 @@ alpha = 0.2  # Ajusta la atenuación según tus preferencias
 audio_con_reverberacion = agregar_reverberacion(entrada, k, alpha)
 
 # Guardar el audio con reverberación
-audio_con_reverberacion.export("reverbAudio.wav", format="wav")
+audio_con_reverberacion.export("reverbAudio.mp3", format="mp3")
