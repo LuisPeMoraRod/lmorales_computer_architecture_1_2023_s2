@@ -17,7 +17,7 @@ module regfile
                reg_array[0] <= 24'h00000;  
                reg_array[1] <= 24'h01000;  
                reg_array[2] <= 24'h1CAC5;  
-               reg_array[3] <= 24'h3FFFF;  
+               reg_array[3] <= 24'h40000;  
                reg_array[4] <= 24'h3858C;  
                reg_array[5] <= 24'h3EFFF;  
                reg_array[6] <= 24'h0;  
