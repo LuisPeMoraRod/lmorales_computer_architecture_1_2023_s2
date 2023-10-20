@@ -7,23 +7,23 @@ module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,I
 	input EX_MemRead,EX_rt,ID_rs,ID_rt;
 	input [2:0] ID_Op;
 	wire [3:0] EX_rt,ID_rs,ID_rt,xorRsRt,xorRtRt;
-	wire [2:0] xoropcodelw,xoropcodexori;
-	wire EX_MemRead;
+	wire [2:0] xoropcodelw,xoropcodexori,andend;
+	wire EX_MemRead, isEnd, isStall;
 	//wire xoropcode1,xoroprt;
 	// write in behavior model
 	/*always @(EX_MemRead or EX_rt or ID_rs or ID_rt)
 	begin
-	 if ((EX_MemRead==1)&&((EX_rt==ID_rs)||((EX_rt==ID_rt)&&(Opcode!= 6'b001110)&&(Opcode!= 6'b100011)))
+	 if ( ( (EX_MemRead==1) && ( (EX_rt==ID_rs) || ( (EX_rt==ID_rt)&&(Opcode!= 3'b001)&&(Opcode!= 3'b101) ) ) || (Opcode == 3'b111))
 	  begin
-	  PC_WriteEn=1'b0;
-	  IFID_WriteEn=1'b0;
-	  Stall_flush =1'b1;
+		PC_WriteEn=1'b0;
+		IFID_WriteEn=1'b0;
+		Stall_flush =1'b1;
 	  end
-	  else
+	 else
 	  begin
-	  PC_WriteEn=1'b1;
-	  IFID_WriteEn=1'b1;
-	  Stall_flush =1'b0;
+		PC_WriteEn=1'b1;
+		IFID_WriteEn=1'b1;
+		Stall_flush =1'b0;
 	  end
 	end
 	*/
@@ -44,25 +44,34 @@ module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,I
 	not #(50) notgate2(notOrRtRt,OrRtRt);
 	// if EX_rt==ID_rt -> notOrRtRt = 1
 
-	xor #(50) xoropcode2(xoropcodelw[2],ID_Op[2],1'b0);
-	xor #(50) xoropcode1(xoropcodelw[1],ID_Op[1],1'b1);
+	xor #(50) xoropcode2(xoropcodelw[2],ID_Op[2],1'b1);
+	xor #(50) xoropcode1(xoropcodelw[1],ID_Op[1],1'b0);
 	xor #(50) xoropcode0(xoropcodelw[0],ID_Op[0],1'b1);
 	or #(50) oropcode1(ec1,xoropcodelw[2],xoropcodelw[1],xoropcodelw[0]);
 	// if (opcode != opcode[lw]) -> xoropcodelw = 1
 
-	xor #(50) xoropcod2(xoropcodexori[2],ID_Op[2],1'b1);
-	xor #(50) xoropcod1(xoropcodexori[1],ID_Op[1],1'b1);
-	xor #(50) xoropcod0(xoropcodexori[0],ID_Op[0],1'b0);
+	xor #(50) xoropcod2(xoropcodexori[2],ID_Op[2],1'b0);
+	xor #(50) xoropcod1(xoropcodexori[1],ID_Op[1],1'b0);
+	xor #(50) xoropcod0(xoropcodexori[0],ID_Op[0],1'b1);
 	or #(50) oropcode2(ec2,xoropcodexori[2],xoropcodexori[1],xoropcodexori[0]);
 	// if (opcode != opcode[xori]) -> xoropcodexori = 1
+
+
+	and #(50) andend2(andend[2], ID_Op[2], 1'b1);
+	and #(50) andend1(andend[1], ID_Op[1], 1'b1);
+	and #(50) andend0(andend[0], ID_Op[0], 1'b1);
+	and #(50) andisend(isEnd, andend[2], andend[1], andend[0]);
+	// if (opcode == opcode[end])
 
 	and #(50) and1(xorop,ec1,ec2);
 	and #(50) and2(xoroprt,xorop,notOrRtRt);
 	or #(50) OrEXIDRsRt(OrOut,notOrRsRt,xoroprt);
 	and #(50) AndCondition(Condition,EX_MemRead,OrOut);
+
+	or #(50) orIsStall(isStall, Condition, isEnd);
 	
 	// Condition = 1 when stall is satisfied
-	not #(50) NotPC_WriteEn(PC_WriteEn,Condition);
-	not #(50) NotIFID_WriteEn(IFID_WriteEn,Condition);
-	buf #(50) bufStallflush(Stall_flush,Condition);
+	not #(50) NotPC_WriteEn(PC_WriteEn,isStall);
+	not #(50) NotIFID_WriteEn(IFID_WriteEn,isStall);
+	buf #(50) bufStallflush(Stall_flush,isStall);
 endmodule
