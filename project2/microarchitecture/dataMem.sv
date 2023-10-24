@@ -20,4 +20,11 @@ ram ram_data (
 	);
 
 assign data = {8'b0 , data_ram};
+
+
+always @(posedge clk)
+	if (writeenable)
+		$display("mem_address=", address, " - data=", data);
+
+
 endmodule

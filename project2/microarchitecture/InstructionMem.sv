@@ -35,12 +35,14 @@ always @(address)
 begin
 //  temp=instrmem[address/4];
  temp=instrmem[address];
+ $display("\ninstruction_address=%d", address, " - instruction=%b", temp);
 end
 
 initial
 begin
    // $readmemb("../../instr.txt", instrmem); //path for simulation
-   $readmemb("../../testbenches/scripts_asip/script_start_test_instructions.txt", instrmem); //path for simulation
+   $readmemb("../../testbenches/scripts_asip/script_start_test_instructions.txt", instrmem); //path for simulation reverb
+	//$readmemb("../../testbenches/scripts_asip/dereverb_script_instructions.txt", instrmem); //path for simulation dereverb
    //$readmemb("instr.txt", instrmem);
 end
 

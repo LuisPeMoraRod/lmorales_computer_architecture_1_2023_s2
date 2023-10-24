@@ -34,7 +34,9 @@ module regfile
            end  
            else begin  
                 if(reg_write_en) begin  
-                     reg_array[reg_write_dest] <= reg_write_data;  
+                     reg_array[reg_write_dest] <= reg_write_data; 
+                     $display("reg_write_dest=%b", reg_write_dest,
+                     " - reg_write_data=%h", reg_write_data);
                 end  
            end  
       end  

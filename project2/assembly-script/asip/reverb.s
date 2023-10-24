@@ -15,7 +15,7 @@ set_data:
 	# Para obtener el valor de la cantidad de datos por audio (n)
 	xori $b9, $zero, 0x00000        # Pone en el registro la direcion de la primera parte del dato # 2
     cargue $b8, $b9                 # Trae la parte mayor -> 0x000001 # 3
-    shift_i $b8, $b8, 16             # 0x010000 # 4
+    shift_i $b8, $b8, 16            # 0x010000 # 4
     
     xori $b9, $zero, 0x00001        # Pone en el registro la direccion de la segunda parte del dato # 5
     cargue $b9, $b9                 # Trae la parte mayor -> 0x00BAC6 # 6
@@ -27,19 +27,19 @@ set_data:
 	# saber donde terminar el programa. Se sumaria la posicion del primer
 	# dato de audio y la cantidad total de datos.
 	
-	sume $b2, $b1, $b0 # Guarda el valor de la ultima posicion de datos del audio en reg $b2
+	sume $b2, $b1, $b0 # Guarda el valor de la ultima posicion de datos del audio en reg $b2 # 8
 	
     # ------------------------------------------------------------------------
 
 	# Trae el valor de k que es solo entero
-	xori $b9, $zero, 0x00003        # Pone en el registro la direcion de la primera parte del dato
-    cargue $b3, $b9                 # Trae el valor de k en el registro $b3
+	xori $b9, $zero, 0x00003        # Pone en el registro la direcion de la primera parte del dato # 9
+    cargue $b3, $b9                 # Trae el valor de k en el registro $b3 # 10
 	
 	# ------------------------------------------------------------------------	
 
     # Trae el valor de alpha, tiene parte entera y fraccionaria
-	xori $b8, $zero, 0x00002        # Pone en el registro la direcion de la primera parte del dato
-    cargue $b4, $b8                 # Trae el valor de alpha en el registro $b4
+	xori $b8, $zero, 0x00002        # Pone en el registro la direcion de la primera parte del dato # 11
+    cargue $b4, $b8                 # Trae el valor de alpha en el registro $b4 # 12
 	
 	# ------------------------------------------------------------------------
 
@@ -48,15 +48,21 @@ set_data:
 	# Se acomodan los valores en los registros respectivos para la operacion
 
     # Se ingresa el 1.0 a los registros para hacer la resta
-	xori $b9, $zero, 256	# 1 0000 0000, para mantener la parte fraccionaria en 0
+	xori $b9, $zero, 256	# 1 0000 0000, para mantener la parte fraccionaria en 0 # 13
 	
     # Se hace la resta normalmente y se deja el valor en $b5
-	reste $b5, $b9, $b4
+	reste $b5, $b9, $b4 # 14
 
     # Se elimina cualquier overflow ($b5 << 8)
-	shift_i $b5, $b5, 8
+	shift_i $b5, $b5, 8 # 15
 	# Se retornan los valores que deben quedar ($b5 >> 8)
-	shift_d $b5, $b5, 8
+
+    # Se agregan instrucciones para que no opere por dependencias
+    sume $b9, $zero, $zero  # nop
+    sume $b9, $zero, $zero  # nop
+    sume $b9, $zero, $zero  # nop
+
+	shift_d $b5, $b5, 8 # 19
 	
 	# ------------------------------------------------------------------------
 
@@ -65,7 +71,7 @@ set_data:
 	# Se suma desde el valor inicial del head del circular buffer ($cbh) hasta la
 	# posicion que se necesite para mantener el valor n - k, por lo que se le sumara
 	# el valor de k en $b3.
-	sume $b6, $cbh, $b3
+	sume $b6, $cbh, $b3 # 20
 	
 	# ------------------------------------------------------------------------
 
@@ -74,13 +80,13 @@ reverb:
 	# Revisar si se ha llegado al final del audio
 	# Compara el indice actual por donde se va en el audio
 	# $a0 con $b2 que tiene el ultimo valor del audio.
-	salte_ig $a0, $b2, end
+	salte_ig $a0, $b2, end # 21
 	
 	# Se ingresa (1 - alpha) en el registro fraccionario del primer operando
-	sume $b7, $b5, $zero
+	sume $b7, $b5, $zero # 22 
 	
 	# Se trae x(n) en el registro para acomodarlo como segundo operando
-	cargue $b8, $a0 # $a0 estara en la n de la posicion del audio actual
+	cargue $b8, $a0 # $a0 estara en la n de la posicion del audio actual # 23
 
     # GUARDAR VALORES EN REGISTROS EN STACK PARA SER UTILIZADOS
 	# EN LA SUBRUTINA DE MULTIPLICACION
@@ -94,10 +100,10 @@ reverb:
 	
 	# Para bajar el stack pointer se le resta 1 espacio de memoria completo
     # Es temp
-	xori $b9, $zero, 1 # Se deja un registro con el valor de 1
+	xori $b9, $zero, 1 # Se deja un registro con el valor de 1 # 24
 
     # Primero se baja el stack pointer
-	reste $sp, $sp, $b9
+	reste $sp, $sp, $b9 # 25
 	# Se guarda $b0
 	guarde $b0, $sp
 	
@@ -129,7 +135,7 @@ reverb:
 	# Se baja el stack pointer
 	reste $sp, $sp, $b9
 	# Se guarda $b6
-	guarde $b6, $sp
+	guarde $b6, $sp # 38
 	
 	# Todos los datos se encuentran en el stack, se puede proceder con la multiplicacion
 	
@@ -138,32 +144,32 @@ reverb:
     # Preparar valores para la multiplicacion
 
 	# Se ingresa x(n) en el registro fraccionario del segundo operando
-	sume $b9, $b8, $zero
+	sume $b9, $b8, $zero # 39
 	
 	# Se acomodara ahora para dejarlo bien en los dos registros
 	
 	# Para dejar solo la parte entera ($b8 >> 8)
-	shift_d $b8, $b8, 8
+	shift_d $b8, $b8, 8 # 40
 	
 	# Para dejar solo la parte decimal ($b9 << 16)
-	shift_i $b9, $b9, 16
+	shift_i $b9, $b9, 16 # 41
 	# Se acomoda en los primeros valores para poder se utilizado ($b9 >> 16)
-	shift_d $b9, $b9, 16
+	shift_d $b9, $b9, 16 # 42
 	
 	# ------------------------------------------------------------------------
 	
     # Preparar (1 - alpha) para multiplicar
 	
 	# Se ingresa (1 - alpha) en el registro entero del primer operando
-	sume $b6, $b5, $zero
+	sume $b6, $b5, $zero # 43
 	
 	# Para dejar solo la parte entera ($b6 >> 8)
-	shift_d $b6, $b6, 8
+	shift_d $b6, $b6, 8 # 44
 	
 	# Para dejar solo la parte decimal ($b7 << 16)
-	shift_i $b7, $b7, 16
+	shift_i $b7, $b7, 16 # 45
 	# Se acomoda en los primeros valores para poder se utilizado ($b7 >> 16)
-	shift_d $b7, $b7, 16
+	shift_d $b7, $b7, 16 # 46
 
 	# ------------------------------------------------------------------------
 
@@ -173,10 +179,10 @@ reverb:
 
     # Se guardara el valor de un label para volver luego de haber terminado la
     # subrutina de multiplicacion. Se usara el registro del audio 2: $a1
-    xori $a1, $zero, _return_after_mul1
+    xori $a1, $zero, _return_after_mul1 # 47
 
     # Salta a la subrutina de multiplicar
-    salte mult
+    salte mult # 48
 
 _return_after_mul1:
 
@@ -252,7 +258,7 @@ _return_after_mul1:
 	
 	# Si la direccion del dato actual es mayor, se puede sumar alpha * y(n - k)
 	# Si no, se pasa directo a guardar el resultado
-	salte_myq $b8, $a0, save_yn  # FALTA DONDE SALTAR
+	salte_myq $b8, $a0, save_yn
 
     # Entonces, como ya hay suficientes datos para obtener y(n - k)
 	# Se puede proceder a calcular su direccion en el buffer circular
@@ -564,35 +570,35 @@ next_data:
 
 mult:
 	# $b3: high = a x c
-	multiplique $b3, $b6, $b8 # Guarda el resultado de high en reg $b3
+	multiplique $b3, $b6, $b8 # Guarda el resultado de high en reg $b3 # 49
 
 	# $b4: mid = (a x d) + (b x c)
 	# (a x d)
-	multiplique $b4, $b6, $b9
+	multiplique $b4, $b6, $b9 # 50
 	# (b x c)
-	multiplique $b1, $b7, $b8 # $b1 sobra
+	multiplique $b1, $b7, $b8 # $b1 sobra # 51
 	# mid result
-	sume $b4, $b4, $b1 # Guarda el resultado de mid en reg $b4
+	sume $b4, $b4, $b1 # Guarda el resultado de mid en reg $b4 # 52
 	
 	
 	# low = b x d
-	multiplique $b5, $b7, $b9 # Guarda el resultado de low en reg $b5
+	multiplique $b5, $b7, $b9 # Guarda el resultado de low en reg $b5 # 53
 
 	
 	# result = (high << 8) + mid + (low >> 8)
 	# para el result: (high << 8)
-	shift_i $b3, $b3, 8
+	shift_i $b3, $b3, 8 # 54
 	# para el result: (low >> 8)
-	shift_d $b5, $b5, 8
+	shift_d $b5, $b5, 8 # 55
 	
 	# Genera el resultado
-	sume $b2, $b3, $b4
-	sume $b2, $b2, $b5
+	sume $b2, $b3, $b4 # 56
+	sume $b2, $b2, $b5 # 57
 	
 	# Para retornar a la siguiente instruccion desde donde se llamo
 	# $a1 guarda la direccion de esa instruccion con el jr se vuelve al
     # valor exacto de la instruccion siguiente.
-	salte_r $a1
+	salte_r $a1 # 58
 
 end:
     sume $b0, $zero, $zero 

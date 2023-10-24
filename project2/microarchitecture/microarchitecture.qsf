@@ -85,9 +85,6 @@ set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME dataMem_tb -section_id da
 set_global_assignment -name EDA_TEST_BENCH_NAME clock_divider_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id clock_divider_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME clock_divider_tb -section_id clock_divider_tb
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name EDA_TEST_BENCH_NAME ASIP_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id ASIP_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME ASIP_tb -section_id ASIP_tb
@@ -149,4 +146,8 @@ set_global_assignment -name TEXT_FILE testbenches/scripts_asip/lw_test_instructi
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name TEXT_FILE testbenches/scripts_asip/script_start_test_instructions.txt
 set_global_assignment -name EDA_TEST_BENCH_FILE testbenches/ASIP_tb.sv -section_id ASIP_tb
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name TEXT_FILE testbenches/scripts_asip/dereverb_script_instructions.txt
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,0 +1,49 @@
+Registros para el reverb:
+
+$a0: Dirección del valor actual del audio por operar
+
+$a1: Direccion de la primera posicion del buffer circular ($s1)
+
+
+
+$t0: Dirección del primer dato de audio
+
+$t1: Cantidad de datos por audio
+
+$t2: Dirección del último dato de audio
+
+$t3: k (valor entero, sin parte fraccionaria)
+
+$t4: alpha
+
+$t5: (1 - alpha)
+
+$t6: Última dirección del buffer para la k actual
+
+$t7: y(n)
+
+
+
+Registros para el dereverb:
+
+$a0: Direccion de la primera posicion del buffer circular ($s1)
+
+$a1: Dirección del valor actual del audio por operar
+
+
+
+$t0: Dirección del primer dato de audio
+
+$t1: Cantidad de datos por audio
+
+$t2: Dirección del último dato de audio
+
+$t3: k (valor entero, sin parte fraccionaria)
+
+$t4: alpha / (1 - alpha)
+
+$t5: 1 / (1 - alpha)
+
+$t6: Última dirección del buffer para la k actual
+
+$t7: y(n)

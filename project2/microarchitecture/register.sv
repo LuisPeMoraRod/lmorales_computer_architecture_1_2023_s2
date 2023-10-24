@@ -8,7 +8,7 @@ module register #(parameter N=24) (RegOut,RegIn,WriteEn,reset,clk);
 		if (reset)
 			q_reg = 24'h000000; // On reset, set to 0
 		else if (WriteEn)
-			q_reg = RegIn; // Otherwise RegOut = RegIn 
+			q_reg = RegIn; // Otherwise RegOut = RegIn
 
 	assign RegOut = q_reg;
 
