@@ -19,5 +19,6 @@ ram ram_data (
 	.q ( data_ram )
 	);
 
-assign data = {8'b0 , data_ram};
+assign data = {{8{data_ram[15]}} , data_ram};
+
 endmodule

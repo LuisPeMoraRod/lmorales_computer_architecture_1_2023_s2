@@ -40,10 +40,10 @@ end
 
 initial
 begin
-   // $readmemb("../../testbenches/scripts_asip/lw_test_instructions.txt", instrmem_a0); //path for simulation
-   // $readmemb("../../testbenches/scripts_asip/jr_test_instructions.txt", instrmem_a1); //path for simulation
-   $readmemb("instr.txt", instrmem_a0);
-   $readmemb("instr.txt", instrmem_a1);
+   // $readmemb("script0.txt", instrmem_a0);
+   // $readmemb("script1.txt", instrmem_a1);
+   $readmemb("../../script0.txt", instrmem_a0);
+   $readmemb("../../script1.txt", instrmem_a1);
 end
 
 endmodule

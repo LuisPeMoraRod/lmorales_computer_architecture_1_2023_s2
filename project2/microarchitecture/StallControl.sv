@@ -2,6 +2,13 @@
 
 // Stall Control 
 module StallControl(PC_WriteEn,IFID_WriteEn,Stall_flush,EX_MemRead,EX_rt,ID_rs,ID_rt,ID_Op);
+	
+	// Data hazards which needs stalling 1 cycle happen when the destination 
+	//register (EX_rt) of the current reading memory instruction  is the same as the
+	//source register (ID_rs or ID_rt) of the coming instruction in ID stage
+	//except for ID_rt of XORI and LW instructions (where Rt is the
+	//destination register not source register with XORI and LW).
+	
 	output PC_WriteEn,IFID_WriteEn,Stall_flush;
 	wire PC_WriteEn,IFID_WriteEn,Stall_flush;
 	input EX_MemRead,EX_rt,ID_rs,ID_rt;

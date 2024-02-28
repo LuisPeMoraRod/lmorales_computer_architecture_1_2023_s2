@@ -53,7 +53,7 @@ casex (Opcode)
      BranchSrc = 1'b0;
      ALUOp = 2'b11;
      Jump = 1'b0;
-     SignZero= 1'b0; // zero extend
+     SignZero= 1'b0; // sign extend
     end
  3'b010 : begin // beq - branch on equal
      RegDst = 1'b0;

@@ -5,6 +5,9 @@ ID_RegDst,ID_ALUSrc, ID_MemtoReg,ID_RegWrite,ID_MemRead,ID_MemWrite,
 ID_Branch,ID_BranchSrc,ID_ALUOp,ID_JRControl,flush,RegDst,ALUSrc,MemtoReg,RegWrite,
 MemRead,MemWrite,Branch,BranchSrc,ALUOp,JRControl);
 
+	//Flush Control Unit is designed to solve control hazards and it discards 
+	//instructions in IF and ID stages when a jump instruction(J, JR, or BNE) performs.
+
 	output ID_RegDst,ID_ALUSrc,ID_MemtoReg,ID_RegWrite,ID_MemRead,ID_MemWrite,ID_Branch,ID_BranchSrc,ID_JRControl;
 	output [1:0] ID_ALUOp;
 	input flush,RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite,Branch,BranchSrc,JRControl;

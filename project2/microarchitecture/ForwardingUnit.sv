@@ -1,6 +1,13 @@
 `timescale 1 ps / 100 fs
 // Forwarding Unit
 module ForwardingUnit(ForwardA,ForwardB,MEM_RegWrite,WB_RegWrite,MEM_WriteRegister,WB_WriteRegister,EX_rs,EX_rt);
+	
+	// The Forwarding Unit is designed to solve the data hazards in pipelined 
+	//MIPS Processor. The correct data at the output of the ALU is forwarded to 
+	//the input of the ALU when data hazards are detected. Data hazards are detected when
+	//the source register (EX_rs or EX_rt) of the current instruction is the
+	//same as the destination register (MEM_WriteRegister or EX_WriteRegister) of the previous instruction.
+	
 	output [1:0] ForwardA,ForwardB;
 	wire [1:0] ForwardA,ForwardB;
 	input MEM_RegWrite,WB_RegWrite;
